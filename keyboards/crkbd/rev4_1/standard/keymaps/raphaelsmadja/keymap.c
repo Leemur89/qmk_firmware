@@ -70,7 +70,7 @@ layer_state_t layer_state_set_user(layer_state_t state) {
     return update_tri_layer_state(state, 1, 2, 3);
 }
 
-// Couleur RGB en fonction du layer actif (le layer 0 garde l'effet configuré)
+// Couleur RGB en fonction du layer actif (layer 0 = typing heatmap, cf. config.h)
 bool rgb_matrix_indicators_user(void) {
     switch (get_highest_layer(layer_state)) {
         case 1:
