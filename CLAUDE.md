@@ -24,7 +24,7 @@ When discussing this keymap, keys are referred to by these names instead of raw 
 **Pinky keys** — the outer column of each half (left column 0, right column 5), 3 per side named by row. Each also has a 3-letter acronym (Pinky/Left-Right/Up-Middle-Down):
 | | Gauche (left) | Droite (right) |
 |---|---|---|
-| **Haut** (top) | `PLU` = `LALT_T(KC_TAB)` — Tab tap / Alt hold | `PRU` = `TD(TD_PRU)` — Escape tap / toggle mouse layer (layer 4) on double-tap; on layer 4 itself, `PRU` is overridden to `TO(0)` so a single tap exits back to layer 0 |
+| **Haut** (top) | `PLU` = `LALT_T(KC_TAB)` — Tab tap / Alt hold; on layer 1, `PLU` is overridden to `QK_BOOT` (bootloader entry) | `PRU` = `TD(TD_PRU)` — Escape tap / toggle mouse layer (layer 4) on double-tap; on layer 4 itself, `PRU` is overridden to `TO(0)` so a single tap exits back to layer 0 |
 | **Milieu** (home row) | `PLM` = `KC_LCTL` | `PRM` = `KC_QUOT` — the `'` key |
 | **Bas** (bottom) | `PLD` = `KC_LSFT` | `PRD` = `KC_RSFT` |
 
@@ -84,7 +84,7 @@ make test:tap_dance
 
 - `keymap.c` defines a 5-layer `keymaps[]` array using the `LAYOUT()` macro (36 main keys + 6 thumb keys, split 18/18 + 3/3):
   - Layer 0: base QWERTY layer with home-row mods (`LALT_T`, `LSFT_T`/`RSFT_T` on F/J, `LGUI_T` on Enter) and a Hyper one-shot mod on `TRO` (`OSM(MOD_HYPR)`), also reachable via the `TRM`+`TLO` combo (see Key naming convention above).
-  - Layer 1: symbols/numbers (accessed by holding `TLM`, `LT(1, KC_ENT)`, on layer 0; tapping it types Enter). `TRO` on this layer is `TD(TD_BSPC)` (backspace, the layer 0 backspace key was removed as redundant with this).
+  - Layer 1: symbols/numbers (accessed by holding `TLM`, `LT(1, KC_ENT)`, on layer 0; tapping it types Enter). `TRO` on this layer is `TD(TD_BSPC)` (backspace, the layer 0 backspace key was removed as redundant with this). `PLU` on this layer is `QK_BOOT` (bootloader entry) instead of a symbol.
   - Layer 2: navigation/media/screenshot keys (accessed via `LT(2, KC_SPC)`, i.e. hold space).
   - Layer 3: reached automatically when layers 1+2 are both active (tri-layer) — bootloader entry (`QK_BOOT`), RGB matrix controls, and window-management arrow keys.
   - Layer 4: mouse keys layer, entered by double-tapping `PRU` on layer 0 (locked on via `layer_invert(4)`) and exited with a single tap of `PRU` (overridden to `TO(0)` on this layer, instead of falling through to the layer-0 tap-dance); `TRM`/`TRI` are left click (`MS_BTN1`) and `TRO` is right click (`MS_BTN2`) while on this layer.

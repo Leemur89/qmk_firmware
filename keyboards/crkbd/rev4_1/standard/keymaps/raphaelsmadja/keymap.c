@@ -5,7 +5,6 @@
 enum {
     TD_BSPC,
     TD_PRU,
-    TD_PLU,
 };
 
 // TG(4) can't be passed to ACTION_TAP_DANCE_DOUBLE (it only supports basic
@@ -25,39 +24,12 @@ void td_pru_reset(tap_dance_state_t *state, void *user_data) {
     }
 }
 
-// Keeps the normal Tab tap / Alt hold behavior on a single press, but a tap
-// followed by a held second press jumps to the bootloader instead of
-// repeating Alt.
-void td_plu_finished(tap_dance_state_t *state, void *user_data) {
-    if (state->count >= 2) {
-        if (state->pressed) {
-            reset_keyboard();
-        }
-    } else if (state->pressed) {
-        register_code(KC_LALT);
-    } else {
-        register_code16(KC_TAB);
-    }
-}
-
-void td_plu_reset(tap_dance_state_t *state, void *user_data) {
-    if (state->count < 2) {
-        if (state->pressed) {
-            unregister_code(KC_LALT);
-        } else {
-            unregister_code16(KC_TAB);
-        }
-    }
-}
-
 // Tap Dance definitions
 tap_dance_action_t tap_dance_actions[] = {
     // Tap once for backspace, twice for opt+backspace
     [TD_BSPC] = ACTION_TAP_DANCE_DOUBLE(KC_BSPC, LALT(KC_BSPC)),
     // Tap once for Escape, twice to toggle (lock) the mouse layer
     [TD_PRU] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, td_pru_finished, td_pru_reset),
-    // Tap for Tab, hold for Alt, tap then hold for bootloader
-    [TD_PLU] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, td_plu_finished, td_plu_reset),
 };
 
 // Combo: chording TRM (space/layer2) and TLO also arms the Hyper one-shot,
@@ -84,13 +56,13 @@ void process_combo_event(uint16_t combo_index, bool pressed) {
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 	[0] = LAYOUT(
-		TD(TD_PLU), KC_Q, KC_W, KC_E, KC_R, KC_T,                             KC_Y, KC_U, KC_I, KC_O, KC_P, TD(TD_PRU),
+		LALT_T(KC_TAB), KC_Q, KC_W, KC_E, KC_R, KC_T,                         KC_Y, KC_U, KC_I, KC_O, KC_P, TD(TD_PRU),
 		KC_LCTL, KC_A, KC_S, KC_D, LSFT_T(KC_F), KC_G,                        KC_H, RSFT_T(KC_J), KC_K, KC_L, KC_SCLN, KC_QUOT,
 		KC_LSFT, KC_Z, KC_X, KC_C, KC_V, KC_B,                                KC_N, KC_M, KC_COMM, KC_DOT, KC_SLSH, KC_RSFT,
 		KC_LGUI, LT(1, KC_ENT), LGUI_T(KC_ENT),                               KC_SPC, LT(2, KC_SPC), OSM(MOD_HYPR)
 	),
 	[1] = LAYOUT(
-		OSM(MOD_RGUI), LSFT(KC_1), LSFT(KC_2), LSFT(KC_3), LSFT(KC_4), LSFT(KC_5),   LSFT(KC_6), LSFT(KC_7), LSFT(KC_8), LSFT(KC_9), LSFT(KC_0), KC_TRNS,
+		QK_BOOT, LSFT(KC_1), LSFT(KC_2), LSFT(KC_3), LSFT(KC_4), LSFT(KC_5),   LSFT(KC_6), LSFT(KC_7), LSFT(KC_8), LSFT(KC_9), LSFT(KC_0), KC_TRNS,
 		KC_TRNS, KC_1, KC_2, KC_3, LSFT_T(KC_4), KC_5,                        KC_MINS, RSFT_T(KC_EQL), KC_GRV, KC_LBRC, KC_RBRC, KC_BSLS,
 		KC_TRNS, KC_6, KC_7, KC_8, KC_9, KC_0,                                LSFT(KC_MINS), LSFT(KC_EQL), LSFT(KC_GRV), LSFT(KC_LBRC), LSFT(KC_RBRC), KC_TRNS,
 		KC_TRNS, KC_TRNS, KC_TRNS,                                            KC_TRNS, TD(TD_BSPC), LALT(KC_BSPC)
