@@ -60,19 +60,55 @@ tap_dance_action_t tap_dance_actions[] = {
     [TD_PLU] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, td_plu_finished, td_plu_reset),
 };
 
-// Combo: chording TRM (space/layer2) and TLO arms the Hyper one-shot.
-// NOTE: TLO must stay a plain keycode (not a tap dance) here. Tap dance's
-// on_dance_finished/on_reset bracket the dance in add_mods(state->oneshot_mods)/
-// del_mods(state->oneshot_mods): if the dance resolves while the key is still
-// held (e.g. interrupted by this very combo) and the matching release never
-// reaches the tap dance reset handler, the added mod is never removed from
-// real_mods, leaving it stuck until reflash. Combos don't have this bracket,
-// so process_combo_event calling set_oneshot_mods() directly is safe.
+// TLO: tap for Hyper one-shot, hold for Gui. Implemented by hand instead of
+// via tap dance, because tap dance's on_dance_finished/on_reset bracket the
+// dance in add_mods(state->oneshot_mods)/del_mods(state->oneshot_mods) (real,
+// persistent mods, not the transient oneshot state). Combined with TLO also
+// being a combo member, that left Cmd/Gui permanently stuck on in testing.
+// This has no shared framework state to get out of sync: hold detection is
+// just a timestamp checked in matrix_scan_user.
+enum custom_keycodes {
+    CK_TLO = SAFE_RANGE,
+};
+
+static uint16_t tlo_press_time = 0;
+static bool     tlo_pending    = false;
+static bool     tlo_gui_held   = false;
+
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    if (keycode == CK_TLO) {
+        if (record->event.pressed) {
+            tlo_press_time = timer_read();
+            tlo_pending    = true;
+            tlo_gui_held   = false;
+        } else {
+            if (tlo_gui_held) {
+                unregister_code(KC_LGUI);
+                tlo_gui_held = false;
+            } else if (tlo_pending) {
+                set_oneshot_mods(MOD_HYPR);
+            }
+            tlo_pending = false;
+        }
+        return false;
+    }
+    return true;
+}
+
+void matrix_scan_user(void) {
+    if (tlo_pending && !tlo_gui_held && timer_elapsed(tlo_press_time) >= TAPPING_TERM) {
+        register_code(KC_LGUI);
+        tlo_gui_held = true;
+    }
+}
+
+// Combo: chording TRM (space/layer2) and TLO also arms the Hyper one-shot,
+// as a second way to reach it alongside tapping TLO alone.
 enum combos {
     COMBO_HYPER,
 };
 
-const uint16_t PROGMEM hyper_combo[] = {LT(2, KC_SPC), KC_LGUI, COMBO_END};
+const uint16_t PROGMEM hyper_combo[] = {LT(2, KC_SPC), CK_TLO, COMBO_END};
 
 combo_t key_combos[] = {
     [COMBO_HYPER] = COMBO_ACTION(hyper_combo),
@@ -93,7 +129,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 		TD(TD_PLU), KC_Q, KC_W, KC_E, KC_R, KC_T,                             KC_Y, KC_U, KC_I, KC_O, KC_P, TD(TD_PRU),
 		KC_LCTL, KC_A, KC_S, KC_D, LSFT_T(KC_F), KC_G,                        KC_H, RSFT_T(KC_J), KC_K, KC_L, KC_SCLN, KC_QUOT,
 		KC_LSFT, KC_Z, KC_X, KC_C, KC_V, KC_B,                                KC_N, KC_M, KC_COMM, KC_DOT, KC_SLSH, KC_RSFT,
-		KC_LGUI, LT(1, KC_ENT), LGUI_T(KC_ENT),                               KC_SPC, LT(2, KC_SPC), KC_NO
+		CK_TLO, LT(1, KC_ENT), LGUI_T(KC_ENT),                                KC_SPC, LT(2, KC_SPC), KC_NO
 	),
 	[1] = LAYOUT(
 		OSM(MOD_RGUI), LSFT(KC_1), LSFT(KC_2), LSFT(KC_3), LSFT(KC_4), LSFT(KC_5),   LSFT(KC_6), LSFT(KC_7), LSFT(KC_8), LSFT(KC_9), LSFT(KC_0), KC_TRNS,
