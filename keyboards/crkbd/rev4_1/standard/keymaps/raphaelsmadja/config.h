@@ -6,9 +6,13 @@
 // ne s'applique qu'à une EEPROM vierge)
 #define RGB_MATRIX_DEFAULT_MODE RGB_MATRIX_TYPING_HEATMAP
 
-// Synchroniser le layer actif vers la moitié droite (pour les couleurs par
-// layer dans rgb_matrix_indicators_user()) reste non résolu : 5 tentatives
-// différentes ont toutes cassé le scan clavier côté droit, jusqu'à isoler
-// que le simple appel à transaction_register_rpc() suffit (même sans jamais
-// envoyer de donnée). Voir la PR pour le détail des essais. Les couleurs par
-// layer ne s'appliquent donc qu'à la moitié gauche pour l'instant.
+// NOTE HISTORIQUE : synchroniser layer_state vers la moitié droite (pour les
+// couleurs par layer) avait cassé le scan clavier côté droit à 5 reprises,
+// jusqu'à isoler que le simple appel à transaction_register_rpc() suffit
+// (même sans jamais envoyer de donnée) — voir la PR pour le détail des
+// essais. La solution retenue évite d'ajouter une transaction split_common :
+// keymap.c pilote directement rgb_matrix_config (mode + HSV) sur le master
+// depuis layer_state_set_user(), et laisse le RPC RGB_MATRIX_SPLIT déjà
+// intégré à QMK (activé via rgb_matrix.split_count dans keyboard.json)
+// propager ça vers l'esclave — aucune transaction supplémentaire n'est donc
+// ajoutée au split_common.

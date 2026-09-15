@@ -115,9 +115,41 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 	)
 };
 
+// Couleur RGB en fonction du layer actif. On ne synchronise pas layer_state
+// vers la moitié droite (cf. historique dans config.h) : à la place on pilote
+// le mode + la couleur rgb_matrix, qui sont déjà synchronisés vers l'esclave
+// par le RPC intégré de QMK (RGB_MATRIX_SPLIT, activé via rgb_matrix.split_count
+// dans keyboard.json). Ce canal existe indépendamment de nos changements et ne
+// nécessite donc aucune transaction supplémentaire côté split_common.
+static void rgb_matrix_update_layer_color(layer_state_t state) {
+    switch (get_highest_layer(state)) {
+        case 1:
+            rgb_matrix_mode_noeeprom(RGB_MATRIX_SOLID_COLOR);
+            rgb_matrix_sethsv_noeeprom(HSV_BLUE);
+            break;
+        case 2:
+            rgb_matrix_mode_noeeprom(RGB_MATRIX_SOLID_COLOR);
+            rgb_matrix_sethsv_noeeprom(HSV_ORANGE);
+            break;
+        case 3:
+            rgb_matrix_mode_noeeprom(RGB_MATRIX_SOLID_COLOR);
+            rgb_matrix_sethsv_noeeprom(HSV_PURPLE);
+            break;
+        case 4:
+            rgb_matrix_mode_noeeprom(RGB_MATRIX_SOLID_COLOR);
+            rgb_matrix_sethsv_noeeprom(HSV_GREEN);
+            break;
+        default:
+            rgb_matrix_mode_noeeprom(RGB_MATRIX_TYPING_HEATMAP);
+            break;
+    }
+}
+
 // Accès automatique au Layer 3 (Layer 1 + Layer 2)
 layer_state_t layer_state_set_user(layer_state_t state) {
-    return update_tri_layer_state(state, 1, 2, 3);
+    state = update_tri_layer_state(state, 1, 2, 3);
+    rgb_matrix_update_layer_color(state);
+    return state;
 }
 
 // Force la heatmap allumée au boot : RGB_MATRIX_DEFAULT_MODE ne s'applique
@@ -127,27 +159,6 @@ layer_state_t layer_state_set_user(layer_state_t state) {
 void keyboard_post_init_user(void) {
     rgb_matrix_enable_noeeprom();
     rgb_matrix_mode_noeeprom(RGB_MATRIX_TYPING_HEATMAP);
-}
-
-// Couleur RGB en fonction du layer actif (layer 0 = typing heatmap, cf. config.h)
-bool rgb_matrix_indicators_user(void) {
-    switch (get_highest_layer(layer_state)) {
-        case 1:
-            rgb_matrix_set_color_all(RGB_BLUE);
-            break;
-        case 2:
-            rgb_matrix_set_color_all(RGB_ORANGE);
-            break;
-        case 3:
-            rgb_matrix_set_color_all(RGB_PURPLE);
-            break;
-        case 4:
-            rgb_matrix_set_color_all(RGB_GREEN);
-            break;
-        default:
-            break;
-    }
-    return true;
 }
 
 // Gestion réactive Tap-Hold pour Espace et Home Row Mods (F/J)
