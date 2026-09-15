@@ -6,6 +6,7 @@ enum {
     TD_BSPC,
     TD_PRU,
     TD_PLU,
+    TD_TLO,
 };
 
 // TG(4) can't be passed to ACTION_TAP_DANCE_DOUBLE (it only supports basic
@@ -50,6 +51,21 @@ void td_plu_reset(tap_dance_state_t *state, void *user_data) {
     }
 }
 
+// Tap for Hyper (one-shot), hold for Gui
+void td_tlo_finished(tap_dance_state_t *state, void *user_data) {
+    if (state->pressed) {
+        register_code(KC_LGUI);
+    } else {
+        set_oneshot_mods(MOD_HYPR);
+    }
+}
+
+void td_tlo_reset(tap_dance_state_t *state, void *user_data) {
+    if (state->pressed) {
+        unregister_code(KC_LGUI);
+    }
+}
+
 // Tap Dance definitions
 tap_dance_action_t tap_dance_actions[] = {
     // Tap once for backspace, twice for opt+backspace
@@ -58,14 +74,37 @@ tap_dance_action_t tap_dance_actions[] = {
     [TD_PRU] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, td_pru_finished, td_pru_reset),
     // Tap for Tab, hold for Alt, tap then hold for bootloader
     [TD_PLU] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, td_plu_finished, td_plu_reset),
+    // Tap for Hyper one-shot, hold for Gui
+    [TD_TLO] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, td_tlo_finished, td_tlo_reset),
 };
+
+// Combo: alternate way to trigger the Hyper one-shot, chording TRM (space/layer2) and TLO
+enum combos {
+    COMBO_HYPER,
+};
+
+const uint16_t PROGMEM hyper_combo[] = {LT(2, KC_SPC), TD(TD_TLO), COMBO_END};
+
+combo_t key_combos[] = {
+    [COMBO_HYPER] = COMBO_ACTION(hyper_combo),
+};
+
+void process_combo_event(uint16_t combo_index, bool pressed) {
+    switch (combo_index) {
+        case COMBO_HYPER:
+            if (pressed) {
+                set_oneshot_mods(MOD_HYPR);
+            }
+            break;
+    }
+}
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 	[0] = LAYOUT(
 		TD(TD_PLU), KC_Q, KC_W, KC_E, KC_R, KC_T,                             KC_Y, KC_U, KC_I, KC_O, KC_P, TD(TD_PRU),
 		KC_LCTL, KC_A, KC_S, KC_D, LSFT_T(KC_F), KC_G,                        KC_H, RSFT_T(KC_J), KC_K, KC_L, KC_SCLN, KC_QUOT,
 		KC_LSFT, KC_Z, KC_X, KC_C, KC_V, KC_B,                                KC_N, KC_M, KC_COMM, KC_DOT, KC_SLSH, KC_RSFT,
-		KC_LGUI, LT(1, KC_ENT), LGUI_T(KC_ENT),                               KC_SPC, LT(2, KC_SPC), KC_NO
+		TD(TD_TLO), LT(1, KC_ENT), LGUI_T(KC_ENT),                            KC_SPC, LT(2, KC_SPC), KC_NO
 	),
 	[1] = LAYOUT(
 		OSM(MOD_RGUI), LSFT(KC_1), LSFT(KC_2), LSFT(KC_3), LSFT(KC_4), LSFT(KC_5),   LSFT(KC_6), LSFT(KC_7), LSFT(KC_8), LSFT(KC_9), LSFT(KC_0), KC_TRNS,
@@ -77,7 +116,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 		KC_TRNS, KC_NO, KC_NO, KC_NO, KC_F2, KC_NO,                           LCTL(LSFT(LALT(LGUI(KC_Y)))), KC_MPRV, KC_MNXT, KC_MPLY, LGUI(LSFT(KC_T)), KC_TRNS,
 		KC_TRNS, KC_NO, KC_NO, KC_NO, KC_LSFT, KC_NO,                         KC_LEFT, KC_DOWN, KC_UP, KC_RGHT, LGUI(KC_GRV), LSFT(KC_BSLS),
 		KC_TRNS, KC_NO, LGUI(LSFT(KC_4)), KC_NO, KC_NO, KC_NO,                LGUI(KC_PPLS), LGUI(LSFT(KC_LBRC)), LGUI(LSFT(KC_RBRC)), LGUI(KC_PMNS), LGUI(KC_P0), KC_TRNS,
-		OSM(MOD_HYPR), KC_TRNS, OSM(MOD_LGUI),                                KC_TRNS, KC_TRNS, KC_TRNS
+		OSM(MOD_LALT|MOD_LGUI), KC_TRNS, OSM(MOD_LGUI),                       KC_TRNS, KC_TRNS, KC_TRNS
 	),
 	[3] = LAYOUT(
 		QK_BOOT, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,                           KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
