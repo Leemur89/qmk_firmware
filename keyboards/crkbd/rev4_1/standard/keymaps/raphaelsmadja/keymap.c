@@ -77,13 +77,13 @@ bool rgb_matrix_indicators_user(void) {
             rgb_matrix_set_color_all(RGB_BLUE);
             break;
         case 2:
-            rgb_matrix_set_color_all(RGB_GREEN);
+            rgb_matrix_set_color_all(RGB_ORANGE);
             break;
         case 3:
-            rgb_matrix_set_color_all(RGB_RED);
+            rgb_matrix_set_color_all(RGB_PURPLE);
             break;
         case 4:
-            rgb_matrix_set_color_all(RGB_PURPLE);
+            rgb_matrix_set_color_all(RGB_GREEN);
             break;
         default:
             break;
