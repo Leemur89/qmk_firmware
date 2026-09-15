@@ -6,20 +6,9 @@
 // ne s'applique qu'à une EEPROM vierge)
 #define RGB_MATRIX_DEFAULT_MODE RGB_MATRIX_TYPING_HEATMAP
 
-// TEST DIAGNOSTIC (pas un fix) : déclare un transaction ID RPC custom sans
-// jamais l'enregistrer/l'utiliser (keymap.c est identique à la version qui
-// fonctionne). But : voir si le simple fait d'agrandir la table de
-// transactions split (via SPLIT_TRANSACTION_RPC, déclenché par cette
-// define) suffit à casser le scan clavier côté droit sur ce clavier, même
-// sans jamais s'en servir — ce qui écarterait toute question de fréquence/
-// volume de sync et pointerait vers une limite plus fondamentale du lien
-// série de cette carte.
-//
-// Essais précédents, tous cassé le clavier droit à chaque fois :
-// 1) SPLIT_LAYER_STATE_ENABLE seul
-// 2) idem + SPLIT_WATCHDOG_TIMEOUT 15000 (LEDs OK, heatmap visible, mais
-//    plus aucune touche ne remonte)
-// 3) sync via transaction_rpc_send()/register_rpc() explicite et limité à
-//    500ms, hors de la chaîne périodique transactions_master() (toujours
-//    cassé)
-#define SPLIT_TRANSACTION_IDS_USER RPC_LAYER_SYNC
+// Synchroniser le layer actif vers la moitié droite (pour les couleurs par
+// layer dans rgb_matrix_indicators_user()) reste non résolu : 5 tentatives
+// différentes ont toutes cassé le scan clavier côté droit, jusqu'à isoler
+// que le simple appel à transaction_register_rpc() suffit (même sans jamais
+// envoyer de donnée). Voir la PR pour le détail des essais. Les couleurs par
+// layer ne s'appliquent donc qu'à la moitié gauche pour l'instant.

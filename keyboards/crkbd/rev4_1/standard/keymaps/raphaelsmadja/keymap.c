@@ -1,6 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 #include QMK_KEYBOARD_H
-#include "transactions.h"
 
 // Tap Dance declarations
 enum {
@@ -99,13 +98,6 @@ layer_state_t layer_state_set_user(layer_state_t state) {
     return update_tri_layer_state(state, 1, 2, 3);
 }
 
-// TEST DIAGNOSTIC n°5 (pas un fix) : enregistre le handler RPC mais ne
-// l'appelle jamais (pas de housekeeping_task_user), pour savoir si c'est
-// l'enregistrement (transaction_register_rpc) ou l'envoi
-// (transaction_rpc_send) qui casse le scan clavier côté droit.
-void layer_sync_slave_handler(uint8_t in_buflen, const void *in_data, uint8_t out_buflen, void *out_data) {
-}
-
 // Force la heatmap allumée au boot : RGB_MATRIX_DEFAULT_MODE ne s'applique
 // qu'à une EEPROM vierge, donc un mode ou un état enable/disable déjà
 // enregistré (ex. cycle_all, RGB éteint via RM_TOGG lors d'un test) ne
@@ -113,7 +105,6 @@ void layer_sync_slave_handler(uint8_t in_buflen, const void *in_data, uint8_t ou
 void keyboard_post_init_user(void) {
     rgb_matrix_enable_noeeprom();
     rgb_matrix_mode_noeeprom(RGB_MATRIX_TYPING_HEATMAP);
-    transaction_register_rpc(RPC_LAYER_SYNC, layer_sync_slave_handler);
 }
 
 // Couleur RGB en fonction du layer actif (layer 0 = typing heatmap, cf. config.h)
