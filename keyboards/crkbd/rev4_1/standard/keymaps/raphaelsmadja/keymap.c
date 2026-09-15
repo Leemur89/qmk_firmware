@@ -70,6 +70,27 @@ layer_state_t layer_state_set_user(layer_state_t state) {
     return update_tri_layer_state(state, 1, 2, 3);
 }
 
+// Couleur RGB en fonction du layer actif (le layer 0 garde l'effet configuré)
+bool rgb_matrix_indicators_user(void) {
+    switch (get_highest_layer(layer_state)) {
+        case 1:
+            rgb_matrix_set_color_all(RGB_BLUE);
+            break;
+        case 2:
+            rgb_matrix_set_color_all(RGB_GREEN);
+            break;
+        case 3:
+            rgb_matrix_set_color_all(RGB_RED);
+            break;
+        case 4:
+            rgb_matrix_set_color_all(RGB_PURPLE);
+            break;
+        default:
+            break;
+    }
+    return true;
+}
+
 // Gestion réactive Tap-Hold pour Espace et Home Row Mods (F/J)
 bool get_hold_on_other_key_press(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
