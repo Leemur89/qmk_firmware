@@ -10,6 +10,8 @@ This is a fork of QMK Firmware (github.com/qmk/qmk_firmware). It is used to buil
 - `master` tracks the upstream/official QMK repo — don't develop directly on it, only use it as a merge/rebase base when syncing upstream changes.
 - Nearly all custom work lives under `keyboards/crkbd/rev4_1/standard/keymaps/raphaelsmadja/` (`keymap.c`, `rules.mk`). Treat this as the actual "project" directory; the rest of the tree is upstream QMK vendored code that should rarely need edits.
 
+**Pull requests always target this fork, never upstream.** This repo (`Leemur89/qmk_firmware`) is a fork of `qmk/qmk_firmware`, and every PR for work here must have base owner/repo `Leemur89/qmk_firmware` and base branch `raph` — never `qmk/qmk_firmware`. GitHub's own "Compare & pull request" flow (including the `pull/new/<branch>` link `git push` prints) defaults the base repo to the upstream parent for a fork, not the fork itself, so this has to be set explicitly every time, not assumed from a printed link or a UI default. When creating a PR via the GitHub MCP tools/API, always pass `owner: "Leemur89"`, `repo: "qmk_firmware"`, `base: "raph"` explicitly rather than relying on any default. If a PR ever does land against `qmk/qmk_firmware` by mistake, close it and re-open against `Leemur89/qmk_firmware:raph` instead of trying to redirect it (a PR's base repo can't be changed after creation).
+
 ## Key naming convention
 
 When discussing this keymap, keys are referred to by these names instead of raw matrix/column coordinates. Each half has 6 columns x 3 rows plus 3 thumb keys; the naming splits the 6 columns into a 5-wide "querty" block and a 1-wide "pinky" column per side, plus the 3-key "thumb" cluster.
