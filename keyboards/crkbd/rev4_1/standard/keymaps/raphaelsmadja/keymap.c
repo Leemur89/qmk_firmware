@@ -1,6 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 #include QMK_KEYBOARD_H
-#include "transactions.h"
 
 // Tap Dance declarations
 enum {
@@ -71,43 +70,16 @@ layer_state_t layer_state_set_user(layer_state_t state) {
     return update_tri_layer_state(state, 1, 2, 3);
 }
 
-// Envoie le layer actif à la moitié esclave via un appel RPC explicite et
-// limité en fréquence (cf. config.h), plutôt que le mécanisme de sync
-// automatique de QMK qui a cassé le scan clavier côté droit sur ce clavier.
-static uint8_t slave_highest_layer = 0;
-
-void layer_sync_slave_handler(uint8_t in_buflen, const void *in_data, uint8_t out_buflen, void *out_data) {
-    if (in_buflen == sizeof(slave_highest_layer)) {
-        memcpy(&slave_highest_layer, in_data, sizeof(slave_highest_layer));
-    }
-}
-
-void housekeeping_task_user(void) {
-    if (is_keyboard_master()) {
-        static uint32_t last_sync   = 0;
-        static uint8_t  last_layer  = 0;
-        uint8_t         layer       = get_highest_layer(layer_state);
-        if (layer != last_layer || timer_elapsed32(last_sync) > 500) {
-            if (transaction_rpc_send(RPC_LAYER_SYNC, sizeof(layer), &layer)) {
-                last_sync  = timer_read32();
-                last_layer = layer;
-            }
-        }
-    }
-}
-
 // Force la heatmap au boot : RGB_MATRIX_DEFAULT_MODE ne s'applique qu'à une
 // EEPROM vierge, donc un mode déjà enregistré (ex. cycle_all) ne serait
 // sinon jamais remplacé par un flash ultérieur.
 void keyboard_post_init_user(void) {
     rgb_matrix_mode_noeeprom(RGB_MATRIX_TYPING_HEATMAP);
-    transaction_register_rpc(RPC_LAYER_SYNC, layer_sync_slave_handler);
 }
 
 // Couleur RGB en fonction du layer actif (layer 0 = typing heatmap, cf. config.h)
 bool rgb_matrix_indicators_user(void) {
-    uint8_t highest_layer = is_keyboard_master() ? get_highest_layer(layer_state) : slave_highest_layer;
-    switch (highest_layer) {
+    switch (get_highest_layer(layer_state)) {
         case 1:
             rgb_matrix_set_color_all(RGB_BLUE);
             break;
