@@ -6,7 +6,6 @@ enum {
     TD_BSPC,
     TD_PRU,
     TD_PLU,
-    TD_TLO,
 };
 
 // TG(4) can't be passed to ACTION_TAP_DANCE_DOUBLE (it only supports basic
@@ -51,18 +50,6 @@ void td_plu_reset(tap_dance_state_t *state, void *user_data) {
     }
 }
 
-// Tap once for Gui (one-shot), twice for Hyper (one-shot)
-void td_tlo_finished(tap_dance_state_t *state, void *user_data) {
-    if (state->count >= 2) {
-        set_oneshot_mods(MOD_HYPR);
-    } else {
-        set_oneshot_mods(MOD_LGUI);
-    }
-}
-
-void td_tlo_reset(tap_dance_state_t *state, void *user_data) {
-}
-
 // Tap Dance definitions
 tap_dance_action_t tap_dance_actions[] = {
     // Tap once for backspace, twice for opt+backspace
@@ -71,16 +58,21 @@ tap_dance_action_t tap_dance_actions[] = {
     [TD_PRU] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, td_pru_finished, td_pru_reset),
     // Tap for Tab, hold for Alt, tap then hold for bootloader
     [TD_PLU] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, td_plu_finished, td_plu_reset),
-    // Tap once for Gui one-shot, twice for Hyper one-shot
-    [TD_TLO] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, td_tlo_finished, td_tlo_reset),
 };
 
-// Combo: alternate way to trigger the Hyper one-shot, chording TRM (space/layer2) and TLO
+// Combo: chording TRM (space/layer2) and TLO arms the Hyper one-shot.
+// NOTE: TLO must stay a plain keycode (not a tap dance) here. Tap dance's
+// on_dance_finished/on_reset bracket the dance in add_mods(state->oneshot_mods)/
+// del_mods(state->oneshot_mods): if the dance resolves while the key is still
+// held (e.g. interrupted by this very combo) and the matching release never
+// reaches the tap dance reset handler, the added mod is never removed from
+// real_mods, leaving it stuck until reflash. Combos don't have this bracket,
+// so process_combo_event calling set_oneshot_mods() directly is safe.
 enum combos {
     COMBO_HYPER,
 };
 
-const uint16_t PROGMEM hyper_combo[] = {LT(2, KC_SPC), TD(TD_TLO), COMBO_END};
+const uint16_t PROGMEM hyper_combo[] = {LT(2, KC_SPC), KC_LGUI, COMBO_END};
 
 combo_t key_combos[] = {
     [COMBO_HYPER] = COMBO_ACTION(hyper_combo),
@@ -101,7 +93,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 		TD(TD_PLU), KC_Q, KC_W, KC_E, KC_R, KC_T,                             KC_Y, KC_U, KC_I, KC_O, KC_P, TD(TD_PRU),
 		KC_LCTL, KC_A, KC_S, KC_D, LSFT_T(KC_F), KC_G,                        KC_H, RSFT_T(KC_J), KC_K, KC_L, KC_SCLN, KC_QUOT,
 		KC_LSFT, KC_Z, KC_X, KC_C, KC_V, KC_B,                                KC_N, KC_M, KC_COMM, KC_DOT, KC_SLSH, KC_RSFT,
-		TD(TD_TLO), LT(1, KC_ENT), LGUI_T(KC_ENT),                            KC_SPC, LT(2, KC_SPC), KC_NO
+		KC_LGUI, LT(1, KC_ENT), LGUI_T(KC_ENT),                               KC_SPC, LT(2, KC_SPC), KC_NO
 	),
 	[1] = LAYOUT(
 		OSM(MOD_RGUI), LSFT(KC_1), LSFT(KC_2), LSFT(KC_3), LSFT(KC_4), LSFT(KC_5),   LSFT(KC_6), LSFT(KC_7), LSFT(KC_8), LSFT(KC_9), LSFT(KC_0), KC_TRNS,
