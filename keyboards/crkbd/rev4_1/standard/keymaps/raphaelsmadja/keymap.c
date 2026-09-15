@@ -60,35 +60,31 @@ tap_dance_action_t tap_dance_actions[] = {
     [TD_PLU] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, td_plu_finished, td_plu_reset),
 };
 
-// TLO: tap for Hyper one-shot, hold for Gui. Implemented by hand instead of
-// via tap dance, because tap dance's on_dance_finished/on_reset bracket the
-// dance in add_mods(state->oneshot_mods)/del_mods(state->oneshot_mods) (real,
+// TLO: single tap for Gui one-shot, double tap for Hyper one-shot.
+// Implemented by hand instead of via tap dance, because tap dance's
+// on_dance_finished/on_reset bracket the dance in
+// add_mods(state->oneshot_mods)/del_mods(state->oneshot_mods) (real,
 // persistent mods, not the transient oneshot state). Combined with TLO also
 // being a combo member, that left Cmd/Gui permanently stuck on in testing.
-// This has no shared framework state to get out of sync: hold detection is
-// just a timestamp checked in matrix_scan_user.
+// This has no shared framework state to get out of sync: resolution only
+// depends on the time between two presses, checked in matrix_scan_user.
 enum custom_keycodes {
     CK_TLO = SAFE_RANGE,
 };
 
-static uint16_t tlo_press_time = 0;
-static bool     tlo_pending    = false;
-static bool     tlo_gui_held   = false;
+static uint16_t tlo_tap_timer          = 0;
+static bool     tlo_waiting_second_tap = false;
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     if (keycode == CK_TLO) {
         if (record->event.pressed) {
-            tlo_press_time = timer_read();
-            tlo_pending    = true;
-            tlo_gui_held   = false;
-        } else {
-            if (tlo_gui_held) {
-                unregister_code(KC_LGUI);
-                tlo_gui_held = false;
-            } else if (tlo_pending) {
+            if (tlo_waiting_second_tap && timer_elapsed(tlo_tap_timer) < TAPPING_TERM) {
+                tlo_waiting_second_tap = false;
                 set_oneshot_mods(MOD_HYPR);
+            } else {
+                tlo_waiting_second_tap = true;
+                tlo_tap_timer          = timer_read();
             }
-            tlo_pending = false;
         }
         return false;
     }
@@ -96,9 +92,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 }
 
 void matrix_scan_user(void) {
-    if (tlo_pending && !tlo_gui_held && timer_elapsed(tlo_press_time) >= TAPPING_TERM) {
-        register_code(KC_LGUI);
-        tlo_gui_held = true;
+    if (tlo_waiting_second_tap && timer_elapsed(tlo_tap_timer) >= TAPPING_TERM) {
+        tlo_waiting_second_tap = false;
+        set_oneshot_mods(MOD_LGUI);
     }
 }
 
