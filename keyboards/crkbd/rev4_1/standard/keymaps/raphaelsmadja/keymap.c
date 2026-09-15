@@ -51,19 +51,16 @@ void td_plu_reset(tap_dance_state_t *state, void *user_data) {
     }
 }
 
-// Tap for Hyper (one-shot), hold for Gui
+// Tap once for Gui (one-shot), twice for Hyper (one-shot)
 void td_tlo_finished(tap_dance_state_t *state, void *user_data) {
-    if (state->pressed) {
-        register_code(KC_LGUI);
-    } else {
+    if (state->count >= 2) {
         set_oneshot_mods(MOD_HYPR);
+    } else {
+        set_oneshot_mods(MOD_LGUI);
     }
 }
 
 void td_tlo_reset(tap_dance_state_t *state, void *user_data) {
-    if (state->pressed) {
-        unregister_code(KC_LGUI);
-    }
 }
 
 // Tap Dance definitions
@@ -74,7 +71,7 @@ tap_dance_action_t tap_dance_actions[] = {
     [TD_PRU] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, td_pru_finished, td_pru_reset),
     // Tap for Tab, hold for Alt, tap then hold for bootloader
     [TD_PLU] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, td_plu_finished, td_plu_reset),
-    // Tap for Hyper one-shot, hold for Gui
+    // Tap once for Gui one-shot, twice for Hyper one-shot
     [TD_TLO] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, td_tlo_finished, td_tlo_reset),
 };
 
