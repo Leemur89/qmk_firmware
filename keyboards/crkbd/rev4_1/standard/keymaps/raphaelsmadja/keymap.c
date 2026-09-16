@@ -32,40 +32,18 @@ tap_dance_action_t tap_dance_actions[] = {
     [TD_PRU] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, td_pru_finished, td_pru_reset),
 };
 
-// Combo: chording TRM (space/layer2) and TLO also arms the Hyper one-shot,
-// as a second way to reach it alongside tapping TRO alone.
-enum combos {
-    COMBO_HYPER,
-};
-
-const uint16_t PROGMEM hyper_combo[] = {LT(2, KC_SPC), KC_LGUI, COMBO_END};
-
-combo_t key_combos[] = {
-    [COMBO_HYPER] = COMBO_ACTION(hyper_combo),
-};
-
-void process_combo_event(uint16_t combo_index, bool pressed) {
-    switch (combo_index) {
-        case COMBO_HYPER:
-            if (pressed) {
-                set_oneshot_mods(MOD_HYPR);
-            }
-            break;
-    }
-}
-
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 	[0] = LAYOUT(
 		LALT_T(KC_TAB), KC_Q, KC_W, KC_E, KC_R, KC_T,                         KC_Y, KC_U, KC_I, KC_O, KC_P, TD(TD_PRU),
 		KC_LCTL, KC_A, KC_S, KC_D, LSFT_T(KC_F), KC_G,                        KC_H, RSFT_T(KC_J), KC_K, KC_L, KC_SCLN, KC_QUOT,
 		KC_LSFT, KC_Z, KC_X, KC_C, KC_V, KC_B,                                KC_N, KC_M, KC_COMM, KC_DOT, KC_SLSH, KC_RSFT,
-		KC_LGUI, LT(1, KC_ENT), LGUI_T(KC_ENT),                               KC_SPC, LT(2, KC_SPC), OSM(MOD_HYPR)
+		OSM(MOD_HYPR), MO(1), LGUI_T(KC_ENT),                                 KC_SPC, MO(2), KC_BSPC
 	),
 	[1] = LAYOUT(
 		QK_BOOT, LSFT(KC_1), LSFT(KC_2), LSFT(KC_3), LSFT(KC_4), LSFT(KC_5),   LSFT(KC_6), LSFT(KC_7), LSFT(KC_8), LSFT(KC_9), LSFT(KC_0), KC_TRNS,
 		KC_TRNS, KC_1, KC_2, KC_3, LSFT_T(KC_4), KC_5,                        KC_MINS, RSFT_T(KC_EQL), KC_GRV, KC_LBRC, KC_RBRC, KC_BSLS,
 		KC_TRNS, KC_6, KC_7, KC_8, KC_9, KC_0,                                LSFT(KC_MINS), LSFT(KC_EQL), LSFT(KC_GRV), LSFT(KC_LBRC), LSFT(KC_RBRC), KC_TRNS,
-		KC_TRNS, KC_TRNS, KC_TRNS,                                            KC_TRNS, TD(TD_BSPC), LALT(KC_BSPC)
+		KC_TRNS, KC_TRNS, KC_TRNS,                                            OSM(MOD_RGUI), TD(TD_BSPC), LALT(KC_BSPC)
 	),
 	[2] = LAYOUT(
 		KC_TRNS, KC_NO, KC_NO, KC_NO, KC_F2, KC_NO,                           LCTL(LSFT(LALT(LGUI(KC_Y)))), KC_MPRV, KC_MNXT, KC_MPLY, LGUI(LSFT(KC_T)), KC_TRNS,
@@ -131,18 +109,4 @@ layer_state_t layer_state_set_user(layer_state_t state) {
 void keyboard_post_init_user(void) {
     rgb_matrix_enable_noeeprom();
     rgb_matrix_mode_noeeprom(RGB_MATRIX_TYPING_HEATMAP);
-}
-
-// Gestion réactive Tap-Hold pour Espace et Home Row Mods (F/J)
-bool get_hold_on_other_key_press(uint16_t keycode, keyrecord_t *record) {
-    switch (keycode) {
-        case LT(1, KC_ENT):
-        case LT(2, KC_SPC):
-            return true;
-        case LSFT_T(KC_F):
-        case RSFT_T(KC_J):
-            return false;
-        default:
-            return false;
-    }
 }
