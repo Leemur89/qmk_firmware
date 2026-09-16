@@ -37,7 +37,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 		LALT_T(KC_TAB), KC_Q, KC_W, KC_E, KC_R, KC_T,                         KC_Y, KC_U, KC_I, KC_O, KC_P, TD(TD_PRU),
 		KC_LCTL, KC_A, KC_S, KC_D, LSFT_T(KC_F), KC_G,                        KC_H, RSFT_T(KC_J), KC_K, KC_L, KC_SCLN, KC_QUOT,
 		KC_LSFT, KC_Z, KC_X, KC_C, KC_V, KC_B,                                KC_N, KC_M, KC_COMM, KC_DOT, KC_SLSH, KC_RSFT,
-		OSM(MOD_HYPR), MO(1), LGUI_T(KC_ENT),                                 KC_SPC, LT(2, KC_SPC), KC_BSPC
+		OSM(MOD_HYPR), MO(1), LGUI_T(KC_ENT),                                 KC_SPC, MO(2), KC_BSPC
 	),
 	[1] = LAYOUT(
 		QK_BOOT, LSFT(KC_1), LSFT(KC_2), LSFT(KC_3), LSFT(KC_4), LSFT(KC_5),   LSFT(KC_6), LSFT(KC_7), LSFT(KC_8), LSFT(KC_9), LSFT(KC_0), KC_TRNS,
@@ -109,17 +109,4 @@ layer_state_t layer_state_set_user(layer_state_t state) {
 void keyboard_post_init_user(void) {
     rgb_matrix_enable_noeeprom();
     rgb_matrix_mode_noeeprom(RGB_MATRIX_TYPING_HEATMAP);
-}
-
-// Gestion réactive Tap-Hold pour Espace et Home Row Mods (F/J)
-bool get_hold_on_other_key_press(uint16_t keycode, keyrecord_t *record) {
-    switch (keycode) {
-        case LT(2, KC_SPC):
-            return true;
-        case LSFT_T(KC_F):
-        case RSFT_T(KC_J):
-            return false;
-        default:
-            return false;
-    }
 }

@@ -32,7 +32,7 @@ When discussing this keymap, keys are referred to by these names instead of raw 
 | | Gauche (left) | Droit (right) |
 |---|---|---|
 | **Extérieur** (outermost, away from center) | `TLO` = `OSM(MOD_HYPR)` — Hyper one-shot | `TRO` = `KC_BSPC` — Backspace; on layer 1, `TRO` is `LALT(KC_BSPC)` (word delete) |
-| **Milieu** | `TLM` = `MO(1)` — layer 1 hold, no tap function | `TRM` = `LT(2, KC_SPC)` — Space tap / layer 2 hold |
+| **Milieu** | `TLM` = `MO(1)` — layer 1 hold, no tap function | `TRM` = `MO(2)` — layer 2 hold, no tap function |
 | **Intérieur** (innermost, next to center) | `TLI` = `LGUI_T(KC_ENT)` — Enter tap / Gui hold | `TRI` = `KC_SPC`; on layer 1, `TRI` is `OSM(MOD_RGUI)` (Gui one-shot) |
 
 These names describe layer 0 (the base layer); the same position names apply on other layers even when the keycode there differs (e.g. "pinky droite haut" is `QK_BOOT` on layer 3, `KC_ESC` on layer 0).
@@ -83,12 +83,11 @@ make test:tap_dance
 - `keymap.c` defines a 5-layer `keymaps[]` array using the `LAYOUT()` macro (36 main keys + 6 thumb keys, split 18/18 + 3/3):
   - Layer 0: base QWERTY layer with home-row mods (`LALT_T`, `LSFT_T`/`RSFT_T` on F/J, `LGUI_T` on Enter) and a Hyper one-shot mod on `TLO` (`OSM(MOD_HYPR)`).
   - Layer 1: symbols/numbers (accessed by holding `TLM`, `MO(1)`, on layer 0; `TLM` has no tap function). `TRM` on this layer is `TD(TD_BSPC)` (backspace, the layer 0 backspace key was removed as redundant with this); `TRO` on this layer is `LALT(KC_BSPC)` (word delete). `TRI` on this layer is `OSM(MOD_RGUI)` (Gui one-shot). `PLU` on this layer is `QK_BOOT` (bootloader entry) instead of a symbol.
-  - Layer 2: navigation/media/screenshot keys (accessed via `LT(2, KC_SPC)`, i.e. hold space).
+  - Layer 2: navigation/media/screenshot keys (accessed by holding `TRM`, `MO(2)`, on layer 0; `TRM` has no tap function — Space is typed via `TRI` instead).
   - Layer 3: reached automatically when layers 1+2 are both active (tri-layer) — bootloader entry (`QK_BOOT`), RGB matrix controls, and window-management arrow keys.
   - Layer 4: mouse keys layer, entered by double-tapping `PRU` on layer 0 (locked on via `layer_invert(4)`) and exited with a single tap of `PRU` (overridden to `TO(0)` on this layer, instead of falling through to the layer-0 tap-dance); `TRM`/`TRI` are left click (`MS_BTN1`) and `TRO` is right click (`MS_BTN2`) while on this layer.
   - Two tap-dances: `TD_BSPC` (tap = backspace, double-tap = Option+Backspace/word delete) and `TD_PRU` (tap = Escape, double-tap = toggle/lock layer 4 via `layer_invert(4)` — done manually since `TG()` can't be passed to the simple tap-dance macros).
 - `layer_state_set_user()` wires up the tri-layer behavior (`update_tri_layer_state(state, 1, 2, 3)`), making layer 3 accessible by holding both layer-1 and layer-2 triggers together. It also drives the per-layer RGB color (`rgb_matrix_update_layer_color()`): layer 0 = typing heatmap, layers 1-4 = solid blue/orange/purple/green via `rgb_matrix_mode_noeeprom()`/`rgb_matrix_sethsv_noeeprom()`. This applies to **both halves** — it piggybacks on QMK's built-in `RGB_MATRIX_SPLIT` sync RPC (auto-enabled by `rgb_matrix.split_count` in `keyboard.json`), which was already syncing `rgb_matrix_config` to the slave, rather than syncing `layer_state` itself. Syncing `layer_state` directly (a new split transaction) was tried repeatedly in the past and broke matrix scanning on the right half every time — don't reintroduce that approach; see the history in `config.h`.
-- `get_hold_on_other_key_press()` customizes "hold on other key press" behavior for tap-hold keys: the space/layer-2 key (`LT(2, KC_SPC)`, `TRM`) resolves to hold immediately on another keypress, while the F/J home-row shift mods do not (favoring fast typing over eager modifier activation). Holding `TRM` alone (no follow-up key) still waits out the default 200ms `TAPPING_TERM` before its layer (and RGB color) activates — this is expected tap-hold behavior, not a bug. `TLM` (`MO(1)`) has no tap value, so it has no such race to resolve.
 - `rules.mk` enables `MOUSEKEY_ENABLE`, `RGB_MATRIX_ENABLE`, and `TAP_DANCE_ENABLE` for this keymap specifically.
 
 Keyboard-level config (matrix pins, RGB matrix LED positions, split/handedness config, available `LAYOUT_*` macros) lives one level up in `keyboards/crkbd/rev4_1/standard/keyboard.json` and `keyboards/crkbd/rev4_1/info.json` — only touch these if changing the physical hardware config (not needed for keymap/layer/behavior changes).
