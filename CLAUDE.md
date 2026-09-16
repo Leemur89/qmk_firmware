@@ -31,7 +31,7 @@ When discussing this keymap, keys are referred to by these names instead of raw 
 **Thumb keys** — the 3-key mod cluster per side, named by distance from the keyboard's center gap. Each also has a 3-letter acronym (Thumb/Left-Right/Inner-Middle-Outer):
 | | Gauche (left) | Droit (right) |
 |---|---|---|
-| **Extérieur** (outermost, away from center) | `TLO` = `OSM(MOD_HYPR)` — Hyper one-shot | `TRO` = `KC_BSPC` — Backspace; on layer 1, `TRO` is `LALT(KC_BSPC)` (word delete) |
+| **Extérieur** (outermost, away from center) | `TLO` = `OSM(MOD_HYPR)` — Hyper one-shot | `TRO` = `HYPR_T(KC_BSPC)` — Backspace tap / Hyper hold; on layer 1, `TRO` is `LALT(KC_BSPC)` (word delete, no hold function) |
 | **Milieu** | `TLM` = `MO(1)` — layer 1 hold, no tap function | `TRM` = `MO(2)` — layer 2 hold, no tap function |
 | **Intérieur** (innermost, next to center) | `TLI` = `LGUI_T(KC_ENT)` — Enter tap / Gui hold | `TRI` = `KC_SPC`; on layer 1, `TRI` is `OSM(MOD_RGUI)` (Gui one-shot) |
 
