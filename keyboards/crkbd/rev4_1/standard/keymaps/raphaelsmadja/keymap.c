@@ -136,6 +136,7 @@ void keyboard_post_init_user(void) {
 // Gestion réactive Tap-Hold pour Espace et Home Row Mods (F/J)
 bool get_hold_on_other_key_press(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
+        case LT(1, KC_ENT):
         case LT(2, KC_SPC):
             return true;
         case LSFT_T(KC_F):
