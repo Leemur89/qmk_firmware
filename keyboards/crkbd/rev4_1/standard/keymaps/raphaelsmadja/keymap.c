@@ -71,7 +71,19 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 // par le RPC intégré de QMK (RGB_MATRIX_SPLIT, activé via rgb_matrix.split_count
 // dans keyboard.json). Ce canal existe indépendamment de nos changements et ne
 // nécessite donc aucune transaction supplémentaire côté split_common.
+// Hyper est actif soit via le hold de TRO (HYPR_T, mods "réels" via get_mods()),
+// soit via le tap one-shot de TLO (OSM(MOD_HYPR), suivi via get_oneshot_mods()
+// tant qu'il n'a pas été consommé par la touche suivante).
+static bool is_hyper_active(void) {
+    return ((get_mods() | get_oneshot_mods()) & MOD_HYPR) == MOD_HYPR;
+}
+
 static void rgb_matrix_update_layer_color(layer_state_t state) {
+    if (is_hyper_active()) {
+        rgb_matrix_mode_noeeprom(RGB_MATRIX_SOLID_COLOR);
+        rgb_matrix_sethsv_noeeprom(HSV_RED);
+        return;
+    }
     switch (get_highest_layer(state)) {
         case 1:
             rgb_matrix_mode_noeeprom(RGB_MATRIX_SOLID_COLOR);
@@ -87,7 +99,7 @@ static void rgb_matrix_update_layer_color(layer_state_t state) {
             break;
         case 4:
             rgb_matrix_mode_noeeprom(RGB_MATRIX_SOLID_COLOR);
-            rgb_matrix_sethsv_noeeprom(HSV_GREEN);
+            rgb_matrix_sethsv_noeeprom(HSV_YELLOW);
             break;
         default:
             rgb_matrix_mode_noeeprom(RGB_MATRIX_TYPING_HEATMAP);
@@ -100,6 +112,19 @@ layer_state_t layer_state_set_user(layer_state_t state) {
     state = update_tri_layer_state(state, 1, 2, 3);
     rgb_matrix_update_layer_color(state);
     return state;
+}
+
+// layer_state_set_user ne se redéclenche pas quand seuls les mods changent
+// (hold de TRO ou arm/consommation du one-shot de TLO) : on repère ces
+// transitions ici pour rafraîchir la couleur sans repasser par un changement
+// de layer.
+void matrix_scan_user(void) {
+    static bool hyper_was_active = false;
+    bool hyper_now_active = is_hyper_active();
+    if (hyper_now_active != hyper_was_active) {
+        hyper_was_active = hyper_now_active;
+        rgb_matrix_update_layer_color(layer_state);
+    }
 }
 
 // Force la heatmap allumée au boot : RGB_MATRIX_DEFAULT_MODE ne s'applique
