@@ -19,25 +19,25 @@ typedef struct {
     hsv_t          hsv;
 } rgb_shape_t;
 
-// Carré (Cmd) : contour du bloc querty central de chaque moitié.
+// Carré (Cmd) : W E R / S...F / X C V sur chaque moitié.
 static const uint8_t shape_leds_cmd[] = {
-    17, 12, 11, 4, 16, 5, 15, 14, 9, 6,
-    40, 35, 34, 27, 39, 28, 38, 37, 32, 29,
+    12, 11, 4, 13, 5, 14, 9, 6,
+    35, 34, 27, 36, 28, 37, 32, 29,
 };
-// Croix verticale (Hyper) : barre verticale épaisse + bras horizontal.
+// Croix fine (Hyper) : E D C en colonne + S...F de part et d'autre.
 static const uint8_t shape_leds_hyper[] = {
-    12, 11, 13, 10, 14, 9, 19, 16, 5, 2,
-    35, 34, 36, 33, 37, 32, 42, 39, 28, 25,
+    11, 10, 9, 13, 5,
+    34, 33, 32, 36, 28,
 };
-// ^ (Ctrl) : chevron qui s'élargit du haut vers le bas.
+// ^ (Ctrl) : E en pointe, S et F en pieds.
 static const uint8_t shape_leds_ctrl[] = {
-    12, 11, 16, 5, 20, 1,
-    35, 34, 39, 28, 43, 24,
+    11, 13, 5,
+    34, 36, 28,
 };
-// Opt : diagonale haut-droite -> bas-gauche façon glyphe ⌥.
+// Opt : Q W en haut à gauche, T en haut à droite, D au centre, V B en bas à droite.
 static const uint8_t shape_leds_opt[] = {
-    3, 4, 11, 13, 20, 15, 14,
-    26, 27, 34, 36, 43, 38, 37,
+    17, 12, 3, 10, 6, 1,
+    40, 35, 26, 33, 29, 24,
 };
 
 static const rgb_shape_t shape_cmd   = {shape_leds_cmd, sizeof(shape_leds_cmd) / sizeof(shape_leds_cmd[0]), {HSV_CYAN}};
