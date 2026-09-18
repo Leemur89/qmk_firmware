@@ -24,11 +24,6 @@ static const uint8_t shape_leds_cmd[] = {
     12, 11, 4, 13, 5, 14, 9, 6,
     35, 34, 27, 36, 28, 37, 32, 29,
 };
-// Croix fine (Hyper) : E D C en colonne + S...F de part et d'autre.
-static const uint8_t shape_leds_hyper[] = {
-    11, 10, 9, 13, 5,
-    34, 33, 32, 36, 28,
-};
 // ^ (Ctrl) : E en pointe, S et F en pieds.
 static const uint8_t shape_leds_ctrl[] = {
     11, 13, 5,
@@ -40,16 +35,46 @@ static const uint8_t shape_leds_opt[] = {
     40, 35, 26, 33, 29, 24,
 };
 
-static const rgb_shape_t shape_cmd   = {shape_leds_cmd, sizeof(shape_leds_cmd) / sizeof(shape_leds_cmd[0]), {HSV_CYAN}};
-static const rgb_shape_t shape_hyper = {shape_leds_hyper, sizeof(shape_leds_hyper) / sizeof(shape_leds_hyper[0]), {HSV_RED}};
-static const rgb_shape_t shape_ctrl  = {shape_leds_ctrl, sizeof(shape_leds_ctrl) / sizeof(shape_leds_ctrl[0]), {HSV_GREEN}};
-static const rgb_shape_t shape_opt   = {shape_leds_opt, sizeof(shape_leds_opt) / sizeof(shape_leds_opt[0]), {HSV_MAGENTA}};
+static const rgb_shape_t shape_cmd  = {shape_leds_cmd, sizeof(shape_leds_cmd) / sizeof(shape_leds_cmd[0]), {HSV_CYAN}};
+static const rgb_shape_t shape_ctrl = {shape_leds_ctrl, sizeof(shape_leds_ctrl) / sizeof(shape_leds_ctrl[0]), {HSV_GREEN}};
+static const rgb_shape_t shape_opt  = {shape_leds_opt, sizeof(shape_leds_opt) / sizeof(shape_leds_opt[0]), {HSV_MAGENTA}};
 
 static void paint_shape(const rgb_shape_t *shape, uint8_t led_min, uint8_t led_max) {
     rgb_t rgb = rgb_matrix_hsv_to_rgb(shape->hsv);
     for (uint8_t i = 0; i < shape->count; i++) {
         uint8_t led = shape->leds[i];
         if (led >= led_min && led < led_max) {
+            rgb_matrix_set_color(led, rgb.r, rgb.g, rgb.b);
+        }
+    }
+}
+
+// Croix fine (Hyper = Shift+Cmd+Ctrl+Opt) : chaque touche reprend la couleur
+// du mod qu'elle symbolise (S=Shift, E=Cmd, F=Ctrl, C=Opt) ; D (le centre)
+// n'appartient à aucun des 4 mods et reste dans une couleur à part.
+typedef struct {
+    uint8_t led;
+    hsv_t   hsv;
+} rgb_shape_point_t;
+
+static const rgb_shape_point_t shape_points_hyper[] = {
+    {13, {HSV_RED}},     // S = Shift
+    {11, {HSV_CYAN}},    // E = Cmd
+    {5, {HSV_GREEN}},    // F = Ctrl
+    {9, {HSV_MAGENTA}},  // C = Opt
+    {10, {HSV_WHITE}},   // D = à part
+    {36, {HSV_RED}},     // S = Shift
+    {34, {HSV_CYAN}},    // E = Cmd
+    {28, {HSV_GREEN}},   // F = Ctrl
+    {32, {HSV_MAGENTA}}, // C = Opt
+    {33, {HSV_WHITE}},   // D = à part
+};
+
+static void paint_hyper(uint8_t led_min, uint8_t led_max) {
+    for (uint8_t i = 0; i < sizeof(shape_points_hyper) / sizeof(shape_points_hyper[0]); i++) {
+        uint8_t led = shape_points_hyper[i].led;
+        if (led >= led_min && led < led_max) {
+            rgb_t rgb = rgb_matrix_hsv_to_rgb(shape_points_hyper[i].hsv);
             rgb_matrix_set_color(led, rgb.r, rgb.g, rgb.b);
         }
     }
@@ -65,16 +90,23 @@ static bool render_shapes(effect_params_t *params, uint8_t mask) {
         rgb_matrix_set_color(i, 0, 0, 0);
     }
     if (mask & SHAPE_MASK_CMD) paint_shape(&shape_cmd, led_min, led_max);
-    if (mask & SHAPE_MASK_HYPER) paint_shape(&shape_hyper, led_min, led_max);
     if (mask & SHAPE_MASK_CTRL) paint_shape(&shape_ctrl, led_min, led_max);
     if (mask & SHAPE_MASK_OPT) paint_shape(&shape_opt, led_min, led_max);
+    return rgb_matrix_check_finished_leds(led_max);
+}
+
+static bool SHAPE_HYPER(effect_params_t *params) {
+    RGB_MATRIX_USE_LIMITS(led_min, led_max);
+    for (uint8_t i = led_min; i < led_max; i++) {
+        rgb_matrix_set_color(i, 0, 0, 0);
+    }
+    paint_hyper(led_min, led_max);
     return rgb_matrix_check_finished_leds(led_max);
 }
 
 #define SHAPE_EFFECT(name, mask) \
     static bool name(effect_params_t *params) { return render_shapes(params, (mask)); }
 
-SHAPE_EFFECT(SHAPE_HYPER, SHAPE_MASK_HYPER)
 SHAPE_EFFECT(SHAPE_CMD, SHAPE_MASK_CMD)
 SHAPE_EFFECT(SHAPE_CTRL, SHAPE_MASK_CTRL)
 SHAPE_EFFECT(SHAPE_OPT, SHAPE_MASK_OPT)
