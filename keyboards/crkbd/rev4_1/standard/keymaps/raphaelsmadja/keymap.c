@@ -154,23 +154,28 @@ static bool is_opt_active(void) {
     return ((get_mods() | get_oneshot_mods()) & MOD_MASK_ALT) != 0;
 }
 
+static bool is_shift_active(void) {
+    return ((get_mods() | get_oneshot_mods()) & MOD_MASK_SHIFT) != 0;
+}
+
 // Formes RGB par modificateur (voir rgb_matrix_shapes.c) : carré sur Cmd,
-// croix verticale sur Hyper, ^ sur Ctrl, glyphe Opt sur Alt - superposées
-// quand plusieurs mods sont actifs en même temps. Les noms des constantes
-// RGB_MATRIX_CUSTOM_SHAPE_* doivent rester synchronisés avec les noms
-// déclarés dans rgb_matrix_user.inc.
+// croix multicolore sur Hyper, ^ sur Ctrl, glyphe sur Opt, ligne sur Shift -
+// superposées quand plusieurs mods sont actifs en même temps. Les noms des
+// constantes RGB_MATRIX_CUSTOM_SHAPE_* doivent rester synchronisés avec les
+// noms déclarés dans rgb_matrix_user.inc.
 enum {
     SHAPE_MASK_CMD   = 1 << 0,
     SHAPE_MASK_HYPER = 1 << 1,
     SHAPE_MASK_CTRL  = 1 << 2,
     SHAPE_MASK_OPT   = 1 << 3,
+    SHAPE_MASK_SHIFT = 1 << 4,
 };
 
 // Hyper est défini comme Ctrl+Shift+Alt+Gui combinés (MOD_HYPR) : dès qu'il
-// est actif, get_mods()/get_oneshot_mods() porte aussi les bits Ctrl/Alt/Gui,
-// ce qui ferait à tort passer is_cmd_active()/is_ctrl_active()/is_opt_active()
-// à true et superposerait les 4 formes. Hyper doit donc rester exclusif des
-// 3 autres pour le choix de la forme.
+// est actif, get_mods()/get_oneshot_mods() porte aussi les bits Ctrl/Shift/
+// Alt/Gui, ce qui ferait à tort passer is_cmd_active()/is_ctrl_active()/
+// is_opt_active()/is_shift_active() à true et superposerait les 4 formes.
+// Hyper doit donc rester exclusif des 4 autres pour le choix de la forme.
 static uint8_t active_shape_mask(void) {
     if (is_hyper_active()) {
         return SHAPE_MASK_HYPER;
@@ -179,21 +184,30 @@ static uint8_t active_shape_mask(void) {
     if (is_cmd_active()) mask |= SHAPE_MASK_CMD;
     if (is_ctrl_active()) mask |= SHAPE_MASK_CTRL;
     if (is_opt_active()) mask |= SHAPE_MASK_OPT;
+    if (is_shift_active()) mask |= SHAPE_MASK_SHIFT;
     return mask;
 }
 
 // Hyper étant exclusif (cf. active_shape_mask()), seules les entrées sans le
-// bit HYPER sont jamais utilisées ; les autres (indices 2, 6, 10, etc.) ne
-// sont pas renseignées ci-dessous.
-static const uint8_t shape_mode_for_mask[16] = {
-    [SHAPE_MASK_HYPER]                                  = RGB_MATRIX_CUSTOM_SHAPE_HYPER,
-    [SHAPE_MASK_CMD]                                    = RGB_MATRIX_CUSTOM_SHAPE_CMD,
-    [SHAPE_MASK_CTRL]                                   = RGB_MATRIX_CUSTOM_SHAPE_CTRL,
-    [SHAPE_MASK_OPT]                                    = RGB_MATRIX_CUSTOM_SHAPE_OPT,
-    [SHAPE_MASK_CMD | SHAPE_MASK_CTRL]                  = RGB_MATRIX_CUSTOM_SHAPE_CMD_CTRL,
-    [SHAPE_MASK_CMD | SHAPE_MASK_OPT]                   = RGB_MATRIX_CUSTOM_SHAPE_CMD_OPT,
-    [SHAPE_MASK_CTRL | SHAPE_MASK_OPT]                  = RGB_MATRIX_CUSTOM_SHAPE_CTRL_OPT,
-    [SHAPE_MASK_CMD | SHAPE_MASK_CTRL | SHAPE_MASK_OPT] = RGB_MATRIX_CUSTOM_SHAPE_CMD_CTRL_OPT,
+// bit HYPER sont jamais utilisées ; les autres ne sont pas renseignées
+// ci-dessous.
+static const uint8_t shape_mode_for_mask[32] = {
+    [SHAPE_MASK_HYPER]                                                    = RGB_MATRIX_CUSTOM_SHAPE_HYPER,
+    [SHAPE_MASK_CMD]                                                      = RGB_MATRIX_CUSTOM_SHAPE_CMD,
+    [SHAPE_MASK_CTRL]                                                     = RGB_MATRIX_CUSTOM_SHAPE_CTRL,
+    [SHAPE_MASK_OPT]                                                      = RGB_MATRIX_CUSTOM_SHAPE_OPT,
+    [SHAPE_MASK_SHIFT]                                                    = RGB_MATRIX_CUSTOM_SHAPE_SHIFT,
+    [SHAPE_MASK_CMD | SHAPE_MASK_CTRL]                                    = RGB_MATRIX_CUSTOM_SHAPE_CMD_CTRL,
+    [SHAPE_MASK_CMD | SHAPE_MASK_OPT]                                     = RGB_MATRIX_CUSTOM_SHAPE_CMD_OPT,
+    [SHAPE_MASK_CMD | SHAPE_MASK_SHIFT]                                   = RGB_MATRIX_CUSTOM_SHAPE_CMD_SHIFT,
+    [SHAPE_MASK_CTRL | SHAPE_MASK_OPT]                                    = RGB_MATRIX_CUSTOM_SHAPE_CTRL_OPT,
+    [SHAPE_MASK_CTRL | SHAPE_MASK_SHIFT]                                  = RGB_MATRIX_CUSTOM_SHAPE_CTRL_SHIFT,
+    [SHAPE_MASK_OPT | SHAPE_MASK_SHIFT]                                   = RGB_MATRIX_CUSTOM_SHAPE_OPT_SHIFT,
+    [SHAPE_MASK_CMD | SHAPE_MASK_CTRL | SHAPE_MASK_OPT]                   = RGB_MATRIX_CUSTOM_SHAPE_CMD_CTRL_OPT,
+    [SHAPE_MASK_CMD | SHAPE_MASK_CTRL | SHAPE_MASK_SHIFT]                 = RGB_MATRIX_CUSTOM_SHAPE_CMD_CTRL_SHIFT,
+    [SHAPE_MASK_CMD | SHAPE_MASK_OPT | SHAPE_MASK_SHIFT]                  = RGB_MATRIX_CUSTOM_SHAPE_CMD_OPT_SHIFT,
+    [SHAPE_MASK_CTRL | SHAPE_MASK_OPT | SHAPE_MASK_SHIFT]                 = RGB_MATRIX_CUSTOM_SHAPE_CTRL_OPT_SHIFT,
+    [SHAPE_MASK_CMD | SHAPE_MASK_CTRL | SHAPE_MASK_OPT | SHAPE_MASK_SHIFT] = RGB_MATRIX_CUSTOM_SHAPE_CMD_CTRL_OPT_SHIFT,
 };
 
 static void rgb_matrix_update_layer_color(layer_state_t state) {
