@@ -17,35 +17,57 @@ tap_dance_action_t tap_dance_actions[] = {
 // for as long as both stay held, so there is no tap/hold timing to fight.
 // Mirrored finger-for-finger across both halves (pinky->index: Alt, Ctrl,
 // Cmd, Shift) so either hand can reach any of the 4 mods.
+//
+// Shift+Cmd and Shift+Opt are added as 3-key combos on the Shift finger (F/J)
+// plus the Cmd/Alt finger, needed for e.g. Shift+Cmd+Arrow / Shift+Opt+Arrow:
+// arrows only live on the opposite hand's layer 2 (held via TRM), so a
+// same-hand Cmd/Alt combo can't be held at the same time as that arrow-layer
+// hold - stacking both mods into one combo on the Shift hand is the only way
+// to reach them. QMK resolves the overlap with the single-mod combos
+// automatically (the longest fully-pressed combo wins), and a combo's output
+// keycode can itself carry a mod (e.g. LSFT(KC_LGUI)), which registers both
+// mod bits for as long as the combo is held - no extra code needed for that.
 enum combos {
     COMBO_ALT_L,
     COMBO_CTL_L,
     COMBO_CMD_L,
     COMBO_SFT_L,
+    COMBO_SFT_CMD_L,
+    COMBO_SFT_ALT_L,
     COMBO_ALT_R,
     COMBO_CTL_R,
     COMBO_CMD_R,
     COMBO_SFT_R,
+    COMBO_SFT_CMD_R,
+    COMBO_SFT_ALT_R,
 };
 
-const uint16_t PROGMEM combo_alt_l[] = {MO(1), KC_A, COMBO_END};
-const uint16_t PROGMEM combo_ctl_l[] = {MO(1), KC_S, COMBO_END};
-const uint16_t PROGMEM combo_cmd_l[] = {MO(1), KC_D, COMBO_END};
-const uint16_t PROGMEM combo_sft_l[] = {MO(1), KC_F, COMBO_END};
-const uint16_t PROGMEM combo_alt_r[] = {MO(2), KC_SCLN, COMBO_END};
-const uint16_t PROGMEM combo_ctl_r[] = {MO(2), KC_L, COMBO_END};
-const uint16_t PROGMEM combo_cmd_r[] = {MO(2), KC_K, COMBO_END};
-const uint16_t PROGMEM combo_sft_r[] = {MO(2), KC_J, COMBO_END};
+const uint16_t PROGMEM combo_alt_l[]     = {MO(1), KC_A, COMBO_END};
+const uint16_t PROGMEM combo_ctl_l[]     = {MO(1), KC_S, COMBO_END};
+const uint16_t PROGMEM combo_cmd_l[]     = {MO(1), KC_D, COMBO_END};
+const uint16_t PROGMEM combo_sft_l[]     = {MO(1), KC_F, COMBO_END};
+const uint16_t PROGMEM combo_sft_cmd_l[] = {MO(1), KC_F, KC_D, COMBO_END};
+const uint16_t PROGMEM combo_sft_alt_l[] = {MO(1), KC_F, KC_A, COMBO_END};
+const uint16_t PROGMEM combo_alt_r[]     = {MO(2), KC_SCLN, COMBO_END};
+const uint16_t PROGMEM combo_ctl_r[]     = {MO(2), KC_L, COMBO_END};
+const uint16_t PROGMEM combo_cmd_r[]     = {MO(2), KC_K, COMBO_END};
+const uint16_t PROGMEM combo_sft_r[]     = {MO(2), KC_J, COMBO_END};
+const uint16_t PROGMEM combo_sft_cmd_r[] = {MO(2), KC_J, KC_K, COMBO_END};
+const uint16_t PROGMEM combo_sft_alt_r[] = {MO(2), KC_J, KC_SCLN, COMBO_END};
 
 combo_t key_combos[] = {
-    [COMBO_ALT_L] = COMBO(combo_alt_l, KC_LALT),
-    [COMBO_CTL_L] = COMBO(combo_ctl_l, KC_LCTL),
-    [COMBO_CMD_L] = COMBO(combo_cmd_l, KC_LGUI),
-    [COMBO_SFT_L] = COMBO(combo_sft_l, KC_LSFT),
-    [COMBO_ALT_R] = COMBO(combo_alt_r, KC_LALT),
-    [COMBO_CTL_R] = COMBO(combo_ctl_r, KC_LCTL),
-    [COMBO_CMD_R] = COMBO(combo_cmd_r, KC_LGUI),
-    [COMBO_SFT_R] = COMBO(combo_sft_r, KC_LSFT),
+    [COMBO_ALT_L]     = COMBO(combo_alt_l, KC_LALT),
+    [COMBO_CTL_L]     = COMBO(combo_ctl_l, KC_LCTL),
+    [COMBO_CMD_L]     = COMBO(combo_cmd_l, KC_LGUI),
+    [COMBO_SFT_L]     = COMBO(combo_sft_l, KC_LSFT),
+    [COMBO_SFT_CMD_L] = COMBO(combo_sft_cmd_l, LSFT(KC_LGUI)),
+    [COMBO_SFT_ALT_L] = COMBO(combo_sft_alt_l, LSFT(KC_LALT)),
+    [COMBO_ALT_R]     = COMBO(combo_alt_r, KC_LALT),
+    [COMBO_CTL_R]     = COMBO(combo_ctl_r, KC_LCTL),
+    [COMBO_CMD_R]     = COMBO(combo_cmd_r, KC_LGUI),
+    [COMBO_SFT_R]     = COMBO(combo_sft_r, KC_LSFT),
+    [COMBO_SFT_CMD_R] = COMBO(combo_sft_cmd_r, LSFT(KC_LGUI)),
+    [COMBO_SFT_ALT_R] = COMBO(combo_sft_alt_r, LSFT(KC_LALT)),
 };
 
 // A combo-mod must only apply to a key typed with the OPPOSITE hand from the
@@ -59,12 +81,12 @@ static bool     active_combo_left = false;
 static uint16_t suppressed_keycode = KC_NO;
 
 void process_combo_event(uint16_t combo_index, bool pressed) {
-    if (combo_index > COMBO_SFT_R) {
+    if (combo_index > COMBO_SFT_ALT_R) {
         return;
     }
     if (pressed) {
         active_combo_mod  = key_combos[combo_index].keycode;
-        active_combo_left = combo_index <= COMBO_SFT_L;
+        active_combo_left = combo_index <= COMBO_SFT_ALT_L;
     } else {
         active_combo_mod = KC_NO;
     }
