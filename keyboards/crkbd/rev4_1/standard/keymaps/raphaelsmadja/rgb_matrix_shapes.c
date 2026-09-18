@@ -56,7 +56,9 @@ static void paint_shape(const rgb_shape_t *shape, uint8_t led_min, uint8_t led_m
 }
 
 // Superpose les formes actives ; en cas de chevauchement, l'ordre
-// cmd -> hyper -> ctrl -> opt fait gagner la dernière dessinée.
+// cmd -> ctrl -> opt fait gagner la dernière dessinée. Hyper est exclusif
+// des 3 autres (voir active_shape_mask() dans keymap.c) donc ne se combine
+// jamais avec elles.
 static bool render_shapes(effect_params_t *params, uint8_t mask) {
     RGB_MATRIX_USE_LIMITS(led_min, led_max);
     for (uint8_t i = led_min; i < led_max; i++) {
@@ -72,20 +74,13 @@ static bool render_shapes(effect_params_t *params, uint8_t mask) {
 #define SHAPE_EFFECT(name, mask) \
     static bool name(effect_params_t *params) { return render_shapes(params, (mask)); }
 
-SHAPE_EFFECT(SHAPE_CMD, SHAPE_MASK_CMD)
 SHAPE_EFFECT(SHAPE_HYPER, SHAPE_MASK_HYPER)
+SHAPE_EFFECT(SHAPE_CMD, SHAPE_MASK_CMD)
 SHAPE_EFFECT(SHAPE_CTRL, SHAPE_MASK_CTRL)
 SHAPE_EFFECT(SHAPE_OPT, SHAPE_MASK_OPT)
-SHAPE_EFFECT(SHAPE_CMD_HYPER, SHAPE_MASK_CMD | SHAPE_MASK_HYPER)
 SHAPE_EFFECT(SHAPE_CMD_CTRL, SHAPE_MASK_CMD | SHAPE_MASK_CTRL)
 SHAPE_EFFECT(SHAPE_CMD_OPT, SHAPE_MASK_CMD | SHAPE_MASK_OPT)
-SHAPE_EFFECT(SHAPE_HYPER_CTRL, SHAPE_MASK_HYPER | SHAPE_MASK_CTRL)
-SHAPE_EFFECT(SHAPE_HYPER_OPT, SHAPE_MASK_HYPER | SHAPE_MASK_OPT)
 SHAPE_EFFECT(SHAPE_CTRL_OPT, SHAPE_MASK_CTRL | SHAPE_MASK_OPT)
-SHAPE_EFFECT(SHAPE_CMD_HYPER_CTRL, SHAPE_MASK_CMD | SHAPE_MASK_HYPER | SHAPE_MASK_CTRL)
-SHAPE_EFFECT(SHAPE_CMD_HYPER_OPT, SHAPE_MASK_CMD | SHAPE_MASK_HYPER | SHAPE_MASK_OPT)
 SHAPE_EFFECT(SHAPE_CMD_CTRL_OPT, SHAPE_MASK_CMD | SHAPE_MASK_CTRL | SHAPE_MASK_OPT)
-SHAPE_EFFECT(SHAPE_HYPER_CTRL_OPT, SHAPE_MASK_HYPER | SHAPE_MASK_CTRL | SHAPE_MASK_OPT)
-SHAPE_EFFECT(SHAPE_CMD_HYPER_CTRL_OPT, SHAPE_MASK_CMD | SHAPE_MASK_HYPER | SHAPE_MASK_CTRL | SHAPE_MASK_OPT)
 
 #undef SHAPE_EFFECT
