@@ -156,10 +156,32 @@ layer_state_t layer_state_set_user(layer_state_t state) {
     return state;
 }
 
+// TG(4) on the mouse layer locks it on: PLU (LT(4, KC_TAB)) and TG(4) both
+// act on layer 4's single bit in layer_state, so a stock TG(4) fights the
+// hold - layer_invert() flips a bit already set to 1 by the hold, clearing
+// it immediately, and releasing PLU right after unconditionally clears it
+// again via layer_off(). Locking is tracked manually instead, and
+// matrix_scan_user re-asserts layer_on(4) every scan while locked so PLU's
+// release can't undo it (LT()'s layer_off "wins" for well under a
+// millisecond - not perceptible, and no keycode/report is sent for it).
+static bool layer4_locked = false;
+
 // Enforces the opposite-hand-only rule for the combo mods above: while a
 // combo mod is held, a key typed with the SAME hand as the combo is sent
 // unmodified instead of picking up that mod.
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    if (keycode == TG(4)) {
+        if (record->event.pressed) {
+            layer4_locked = !layer4_locked;
+            if (layer4_locked) {
+                layer_on(4);
+            } else {
+                layer_off(4);
+            }
+        }
+        return false;
+    }
+
     if (active_combo_mod == KC_NO) {
         return true;
     }
@@ -194,6 +216,9 @@ void matrix_scan_user(void) {
     if (hyper_now_active != hyper_was_active) {
         hyper_was_active = hyper_now_active;
         rgb_matrix_update_layer_color(layer_state);
+    }
+    if (layer4_locked) {
+        layer_on(4);
     }
 }
 
