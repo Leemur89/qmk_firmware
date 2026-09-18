@@ -4,38 +4,102 @@
 // Tap Dance declarations
 enum {
     TD_BSPC,
-    TD_PRU,
 };
-
-// TG(4) can't be passed to ACTION_TAP_DANCE_DOUBLE (it only supports basic
-// keycodes/mod-taps via register_code16), so the mouse-layer toggle is done
-// manually here instead.
-void td_pru_finished(tap_dance_state_t *state, void *user_data) {
-    if (state->count >= 2) {
-        layer_invert(4);
-    } else {
-        register_code16(KC_ESC);
-    }
-}
-
-void td_pru_reset(tap_dance_state_t *state, void *user_data) {
-    if (state->count < 2) {
-        unregister_code16(KC_ESC);
-    }
-}
 
 // Tap Dance definitions
 tap_dance_action_t tap_dance_actions[] = {
     // Tap once for backspace, twice for opt+backspace
     [TD_BSPC] = ACTION_TAP_DANCE_DOUBLE(KC_BSPC, LALT(KC_BSPC)),
-    // Tap once for Escape, twice to toggle (lock) the mouse layer
-    [TD_PRU] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, td_pru_finished, td_pru_reset),
 };
+
+// Home row mods via combo instead of tap-hold: holding the layer-1/layer-2
+// thumb key (TLM/TRM) together with a home row letter registers a modifier
+// for as long as both stay held, so there is no tap/hold timing to fight.
+// Mirrored finger-for-finger across both halves (pinky->index: Alt, Ctrl,
+// Cmd, Shift) so either hand can reach any of the 4 mods.
+//
+// Shift+Cmd and Shift+Opt are added as 3-key combos on the Shift finger (F/J)
+// plus the Cmd/Alt finger, needed for e.g. Shift+Cmd+Arrow / Shift+Opt+Arrow:
+// arrows only live on the opposite hand's layer 2 (held via TRM), so a
+// same-hand Cmd/Alt combo can't be held at the same time as that arrow-layer
+// hold - stacking both mods into one combo on the Shift hand is the only way
+// to reach them. QMK resolves the overlap with the single-mod combos
+// automatically (the longest fully-pressed combo wins), and a combo's output
+// keycode can itself carry a mod (e.g. LSFT(KC_LGUI)), which registers both
+// mod bits for as long as the combo is held - no extra code needed for that.
+enum combos {
+    COMBO_ALT_L,
+    COMBO_CTL_L,
+    COMBO_CMD_L,
+    COMBO_SFT_L,
+    COMBO_SFT_CMD_L,
+    COMBO_SFT_ALT_L,
+    COMBO_ALT_R,
+    COMBO_CTL_R,
+    COMBO_CMD_R,
+    COMBO_SFT_R,
+    COMBO_SFT_CMD_R,
+    COMBO_SFT_ALT_R,
+};
+
+const uint16_t PROGMEM combo_alt_l[]     = {MO(1), KC_A, COMBO_END};
+const uint16_t PROGMEM combo_ctl_l[]     = {MO(1), KC_S, COMBO_END};
+const uint16_t PROGMEM combo_cmd_l[]     = {MO(1), KC_D, COMBO_END};
+const uint16_t PROGMEM combo_sft_l[]     = {MO(1), KC_F, COMBO_END};
+const uint16_t PROGMEM combo_sft_cmd_l[] = {MO(1), KC_F, KC_D, COMBO_END};
+const uint16_t PROGMEM combo_sft_alt_l[] = {MO(1), KC_F, KC_A, COMBO_END};
+const uint16_t PROGMEM combo_alt_r[]     = {MO(2), KC_SCLN, COMBO_END};
+const uint16_t PROGMEM combo_ctl_r[]     = {MO(2), KC_L, COMBO_END};
+const uint16_t PROGMEM combo_cmd_r[]     = {MO(2), KC_K, COMBO_END};
+const uint16_t PROGMEM combo_sft_r[]     = {MO(2), KC_J, COMBO_END};
+const uint16_t PROGMEM combo_sft_cmd_r[] = {MO(2), KC_J, KC_K, COMBO_END};
+const uint16_t PROGMEM combo_sft_alt_r[] = {MO(2), KC_J, KC_SCLN, COMBO_END};
+
+combo_t key_combos[] = {
+    [COMBO_ALT_L]     = COMBO(combo_alt_l, KC_LALT),
+    [COMBO_CTL_L]     = COMBO(combo_ctl_l, KC_LCTL),
+    [COMBO_CMD_L]     = COMBO(combo_cmd_l, KC_LGUI),
+    [COMBO_SFT_L]     = COMBO(combo_sft_l, KC_LSFT),
+    [COMBO_SFT_CMD_L] = COMBO(combo_sft_cmd_l, LSFT(KC_LGUI)),
+    [COMBO_SFT_ALT_L] = COMBO(combo_sft_alt_l, LSFT(KC_LALT)),
+    [COMBO_ALT_R]     = COMBO(combo_alt_r, KC_LALT),
+    [COMBO_CTL_R]     = COMBO(combo_ctl_r, KC_LCTL),
+    [COMBO_CMD_R]     = COMBO(combo_cmd_r, KC_LGUI),
+    [COMBO_SFT_R]     = COMBO(combo_sft_r, KC_LSFT),
+    [COMBO_SFT_CMD_R] = COMBO(combo_sft_cmd_r, LSFT(KC_LGUI)),
+    [COMBO_SFT_ALT_R] = COMBO(combo_sft_alt_r, LSFT(KC_LALT)),
+};
+
+// A combo-mod must only apply to a key typed with the OPPOSITE hand from the
+// one holding the combo (e.g. left-hand TLM+F for Shift only modifies a key
+// typed with the right hand) - otherwise it types unmodified. This mirrors
+// "chordal hold" and isn't something the combo feature enforces on its own.
+static uint16_t active_combo_mod  = KC_NO;
+static bool     active_combo_left = false;
+// Only one same-hand keystroke is tracked at a time; holding several
+// same-hand keys during a combo hold is an edge case this doesn't cover.
+static uint16_t suppressed_keycode = KC_NO;
+
+void process_combo_event(uint16_t combo_index, bool pressed) {
+    if (combo_index > COMBO_SFT_ALT_R) {
+        return;
+    }
+    if (pressed) {
+        active_combo_mod  = key_combos[combo_index].keycode;
+        active_combo_left = combo_index <= COMBO_SFT_ALT_L;
+    } else {
+        active_combo_mod = KC_NO;
+    }
+}
+
+// crkbd rev4_1 is a direct-pin split matrix with 4 rows per half (see
+// matrix_pins in info.json): rows 0-3 are the left half, rows 4-7 the right.
+#define KEY_IS_LEFT_HAND(record) ((record)->event.key.row < (MATRIX_ROWS / 2))
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 	[0] = LAYOUT(
-		LALT_T(KC_TAB), KC_Q, KC_W, KC_E, KC_R, KC_T,                         KC_Y, KC_U, KC_I, KC_O, KC_P, TD(TD_PRU),
-		KC_LCTL, KC_A, KC_S, KC_D, LSFT_T(KC_F), KC_G,                        KC_H, RSFT_T(KC_J), KC_K, KC_L, KC_SCLN, KC_QUOT,
+		LT(4, KC_TAB), KC_Q, KC_W, KC_E, KC_R, KC_T,                          KC_Y, KC_U, KC_I, KC_O, KC_P, KC_ESC,
+		KC_NO, KC_A, KC_S, KC_D, KC_F, KC_G,                                  KC_H, KC_J, KC_K, KC_L, KC_SCLN, KC_QUOT,
 		KC_LSFT, KC_Z, KC_X, KC_C, KC_V, KC_B,                                KC_N, KC_M, KC_COMM, KC_DOT, KC_SLSH, KC_RSFT,
 		OSM(MOD_HYPR), MO(1), LGUI_T(KC_ENT),                                 KC_SPC, MO(2), HYPR_T(KC_BSPC)
 	),
@@ -58,7 +122,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 		KC_TRNS, KC_TRNS, KC_TRNS,                                            KC_TRNS, KC_TRNS, KC_TRNS
 	),
 	[4] = LAYOUT(
-		KC_TRNS, KC_TRNS, LGUI(KC_W), KC_TRNS, LGUI(KC_R), LGUI(KC_T),        LGUI(KC_LBRC), MS_WHLU, MS_WHLD, LGUI(KC_RBRC), KC_TRNS, TO(0),
+		KC_TRNS, KC_TRNS, LGUI(KC_W), KC_TRNS, LGUI(KC_R), LGUI(KC_T),        LGUI(KC_LBRC), MS_WHLU, MS_WHLD, LGUI(KC_RBRC), KC_TRNS, QK_LLCK,
 		KC_TRNS, LGUI(KC_A), KC_TRNS, LGUI(KC_D), LGUI(KC_F), KC_TRNS,       MS_LEFT, MS_DOWN, MS_UP, MS_RGHT, KC_TRNS, KC_TRNS,
 		KC_TRNS, KC_TRNS, LGUI(KC_X), LGUI(KC_C), LGUI(KC_V), KC_TRNS,       LGUI(KC_PPLS), LGUI(LSFT(KC_LBRC)), LGUI(LSFT(KC_RBRC)), LGUI(KC_PMNS), LGUI(KC_P0), KC_TRNS,
 		KC_TRNS, KC_TRNS, KC_TRNS,                                            MS_BTN1, MS_BTN1, MS_BTN2
@@ -112,6 +176,34 @@ layer_state_t layer_state_set_user(layer_state_t state) {
     state = update_tri_layer_state(state, 1, 2, 3);
     rgb_matrix_update_layer_color(state);
     return state;
+}
+
+// Enforces the opposite-hand-only rule for the combo mods above: while a
+// combo mod is held, a key typed with the SAME hand as the combo is sent
+// unmodified instead of picking up that mod.
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    if (active_combo_mod == KC_NO) {
+        return true;
+    }
+
+    if (record->event.pressed) {
+        if (keycode == active_combo_mod || suppressed_keycode != KC_NO) {
+            return true;
+        }
+        if (KEY_IS_LEFT_HAND(record) == active_combo_left) {
+            unregister_code16(active_combo_mod);
+            register_code16(keycode);
+            register_code16(active_combo_mod);
+            suppressed_keycode = keycode;
+            return false;
+        }
+    } else if (keycode == suppressed_keycode) {
+        unregister_code16(keycode);
+        suppressed_keycode = KC_NO;
+        return false;
+    }
+
+    return true;
 }
 
 // layer_state_set_user ne se redéclenche pas quand seuls les mods changent
