@@ -106,19 +106,19 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 		LT(4, KC_TAB), KC_Q, KC_W, KC_E, KC_R, KC_T,                          KC_Y, KC_U, KC_I, KC_O, KC_P, KC_ESC,
 		OSM(MOD_HYPR), KC_A, KC_S, KC_D, KC_F, KC_G,                          KC_H, KC_J, KC_K, KC_L, KC_SCLN, KC_QUOT,
 		KC_LSFT, KC_Z, KC_X, KC_C, KC_V, KC_B,                                KC_N, KC_M, KC_COMM, KC_DOT, KC_SLSH, KC_RSFT,
-		KC_NO, MO(1), KC_NO,                                                  KC_NO, LT(2, KC_SPC), KC_NO
+		KC_NO, MO(1), KC_NO,                                                  KC_NO, LT(2, KC_SPC), HYPR_T(KC_BSPC)
 	),
 	[1] = LAYOUT(
 		QK_BOOT, LSFT(KC_1), LSFT(KC_2), LSFT(KC_3), LSFT(KC_4), LSFT(KC_5),   LSFT(KC_6), LSFT(KC_7), LSFT(KC_8), LSFT(KC_9), LSFT(KC_0), KC_TRNS,
 		KC_TRNS, KC_1, KC_2, KC_3, LSFT_T(KC_4), KC_5,                        KC_MINS, RSFT_T(KC_EQL), KC_GRV, KC_LBRC, KC_RBRC, KC_BSLS,
 		KC_TRNS, KC_6, KC_7, KC_8, KC_9, KC_0,                                LSFT(KC_MINS), LSFT(KC_EQL), LSFT(KC_GRV), LSFT(KC_LBRC), LSFT(KC_RBRC), KC_TRNS,
-		KC_NO, KC_TRNS, KC_NO,                                                KC_NO, TD(TD_BSPC), KC_NO
+		KC_NO, KC_TRNS, KC_NO,                                                KC_NO, TD(TD_BSPC), LALT(KC_BSPC)
 	),
 	[2] = LAYOUT(
 		KC_TRNS, KC_NO, KC_NO, KC_NO, KC_F2, KC_NO,                           LCTL(LSFT(LALT(LGUI(KC_Y)))), KC_MPRV, KC_MNXT, KC_MPLY, LGUI(LSFT(KC_T)), KC_TRNS,
 		KC_TRNS, KC_NO, KC_NO, KC_NO, KC_LSFT, KC_NO,                         KC_LEFT, KC_DOWN, KC_UP, KC_RGHT, LGUI(KC_GRV), LSFT(KC_BSLS),
 		KC_TRNS, KC_NO, LGUI(LSFT(KC_4)), KC_NO, KC_NO, KC_NO,                LGUI(KC_PPLS), LGUI(LSFT(KC_LBRC)), LGUI(LSFT(KC_RBRC)), LGUI(KC_PMNS), LGUI(KC_P0), KC_TRNS,
-		KC_NO, KC_TRNS, KC_NO,                                                KC_NO, KC_TRNS, KC_NO
+		KC_NO, KC_TRNS, KC_NO,                                                KC_NO, KC_TRNS, KC_TRNS
 	),
 	[3] = LAYOUT(
 		QK_BOOT, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,                           KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
@@ -130,7 +130,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 		KC_TRNS, KC_TRNS, LGUI(KC_W), KC_TRNS, LGUI(KC_R), LGUI(KC_T),        LGUI(KC_LBRC), MS_WHLU, MS_WHLD, LGUI(KC_RBRC), KC_TRNS, QK_LLCK,
 		KC_TRNS, LGUI(KC_A), KC_TRNS, LGUI(KC_D), LGUI(KC_F), KC_TRNS,       MS_LEFT, MS_DOWN, MS_UP, MS_RGHT, KC_TRNS, KC_TRNS,
 		KC_TRNS, KC_TRNS, LGUI(KC_X), LGUI(KC_C), LGUI(KC_V), KC_TRNS,       LGUI(KC_PPLS), LGUI(LSFT(KC_LBRC)), LGUI(LSFT(KC_RBRC)), LGUI(KC_PMNS), LGUI(KC_P0), KC_TRNS,
-		KC_NO, KC_TRNS, KC_NO,                                                KC_NO, MS_BTN1, KC_NO
+		KC_NO, KC_TRNS, KC_NO,                                                KC_NO, MS_BTN1, MS_BTN2
 	)
 };
 
@@ -140,9 +140,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 // par le RPC intégré de QMK (RGB_MATRIX_SPLIT, activé via rgb_matrix.split_count
 // dans keyboard.json). Ce canal existe indépendamment de nos changements et ne
 // nécessite donc aucune transaction supplémentaire côté split_common.
-// Hyper est porté par PLM (OSM(MOD_HYPR)) : maintenu, ses mods sont "réels"
-// (get_mods()) ; tapé, il reste armé en one-shot (get_oneshot_mods()) tant
-// qu'il n'a pas été consommé par la touche suivante.
+// Hyper est actif soit via le hold de TRO (HYPR_T) ou de PLM (OSM(MOD_HYPR)),
+// mods "réels" via get_mods(), soit via le tap one-shot de PLM, suivi via
+// get_oneshot_mods() tant qu'il n'a pas été consommé par la touche suivante.
 static bool is_hyper_active(void) {
     return ((get_mods() | get_oneshot_mods()) & MOD_HYPR) == MOD_HYPR;
 }
@@ -280,7 +280,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 }
 
 // layer_state_set_user ne se redéclenche pas quand seuls les mods changent
-// (hold de PLM ou arm/consommation de son one-shot) : on repère ces
+// (hold de TRO/PLM ou arm/consommation du one-shot de PLM) : on repère ces
 // transitions ici pour rafraîchir la couleur sans repasser par un changement
 // de layer.
 void matrix_scan_user(void) {
