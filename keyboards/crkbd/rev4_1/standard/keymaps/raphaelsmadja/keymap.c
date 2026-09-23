@@ -56,7 +56,9 @@ const uint16_t PROGMEM combo_sft_r[]     = {LT(2, KC_SPC), KC_J, COMBO_END};
 const uint16_t PROGMEM combo_sft_cmd_r[] = {LT(2, KC_SPC), KC_J, KC_K, COMBO_END};
 const uint16_t PROGMEM combo_sft_alt_r[] = {LT(2, KC_SPC), KC_J, KC_SCLN, COMBO_END};
 // Escape lives on TRM+PLU since PRU now types Enter (the physical TLI key,
-// previously Enter/Gui, was removed). Declared after the mod combos so
+// previously Enter/Gui, was removed). The combo only catches a near-
+// simultaneous press (COMBO_TERM); holding TRM first and then pressing PLU is
+// covered by KC_ESC on PLU in layer 2. Declared after the mod combos so
 // process_combo_event() ignores it.
 const uint16_t PROGMEM combo_esc[]       = {LT(2, KC_SPC), LT(4, KC_TAB), COMBO_END};
 
@@ -116,7 +118,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 		KC_NO, KC_TRNS, KC_NO,                                                KC_NO, TD(TD_BSPC), LALT(KC_BSPC)
 	),
 	[2] = LAYOUT(
-		KC_TRNS, KC_NO, KC_NO, KC_NO, KC_F2, KC_NO,                           LCTL(LSFT(LALT(LGUI(KC_Y)))), KC_MPRV, KC_MNXT, KC_MPLY, LGUI(LSFT(KC_T)), KC_TRNS,
+		KC_ESC, KC_NO, KC_NO, KC_NO, KC_F2, KC_NO,                            LCTL(LSFT(LALT(LGUI(KC_Y)))), KC_MPRV, KC_MNXT, KC_MPLY, LGUI(LSFT(KC_T)), KC_TRNS,
 		KC_TRNS, KC_NO, KC_NO, KC_NO, KC_LSFT, KC_NO,                         KC_LEFT, KC_DOWN, KC_UP, KC_RGHT, LGUI(KC_GRV), LSFT(KC_BSLS),
 		KC_TRNS, KC_NO, LGUI(LSFT(KC_4)), KC_NO, KC_NO, KC_NO,                LGUI(KC_PPLS), LGUI(LSFT(KC_LBRC)), LGUI(LSFT(KC_RBRC)), LGUI(KC_PMNS), LGUI(KC_P0), KC_TRNS,
 		KC_NO, KC_TRNS, KC_NO,                                                KC_NO, KC_TRNS, KC_TRNS

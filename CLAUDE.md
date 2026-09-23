@@ -24,7 +24,7 @@ When discussing this keymap, keys are referred to by these names instead of raw 
 **Pinky keys** — the outer column of each half (left column 0, right column 5), 3 per side named by row. Each also has a 3-letter acronym (Pinky/Left-Right/Up-Middle-Down):
 | | Gauche (left) | Droite (right) |
 |---|---|---|
-| **Haut** (top) | `PLU` = `LT(4, KC_TAB)` — Tab tap / layer 4 hold; on layer 1, `PLU` is overridden to `QK_BOOT` (bootloader entry); `TRM`+`PLU` combo = Escape | `PRU` = `KC_ENT` — Enter; on layer 4, `PRU` is `QK_LLCK` (layer lock) |
+| **Haut** (top) | `PLU` = `LT(4, KC_TAB)` — Tab tap / layer 4 hold; on layer 1, `PLU` is overridden to `QK_BOOT` (bootloader entry); `TRM`+`PLU` = Escape (combo when pressed together, `KC_ESC` on `PLU` in layer 2 when `TRM` is held first) | `PRU` = `KC_ENT` — Enter; on layer 4, `PRU` is `QK_LLCK` (layer lock) |
 | **Milieu** (home row) | `PLM` = `OSM(MOD_HYPR)` — Hyper (one-shot on tap, held mod on hold); Ctrl is on a combo instead | `PRM` = `KC_QUOT` — the `'` key |
 | **Bas** (bottom) | `PLD` = `KC_LSFT` | `PRD` = `KC_RSFT` |
 
