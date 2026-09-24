@@ -24,7 +24,7 @@ When discussing this keymap, keys are referred to by these names instead of raw 
 **Pinky keys** — the outer column of each half (left column 0, right column 5), 3 per side named by row. Each also has a 3-letter acronym (Pinky/Left-Right/Up-Middle-Down):
 | | Gauche (left) | Droite (right) |
 |---|---|---|
-| **Haut** (top) | `PLU` = `LT(4, KC_TAB)` — Tab tap / layer 4 hold; on layer 1, `PLU` is overridden to `QK_BOOT` (bootloader entry); `TRM`+`PLU` = Escape (combo when pressed together, `KC_ESC` on `PLU` in layer 2 when `TRM` is held first) | `PRU` = `KC_ENT` — Enter; on layer 4, `PRU` is `QK_LLCK` (layer lock) |
+| **Haut** (top) | `PLU` = `LT(4, KC_TAB)` — Tab tap / layer 4 hold; on layer 1, `PLU` is overridden to `QK_BOOT` (bootloader entry) | `PRU` = `KC_ENT` — Enter; on layer 2 (`TRM` held), `PRU` is Escape; on layer 4, `PRU` is `QK_LLCK` (layer lock) |
 | **Milieu** (home row) | `PLM` = `OSM(MOD_HYPR)` — Hyper (one-shot on tap, held mod on hold); Ctrl is on a combo instead | `PRM` = `KC_QUOT` — the `'` key |
 | **Bas** (bottom) | `PLD` = `KC_LSFT` | `PRD` = `KC_RSFT` |
 
@@ -81,7 +81,7 @@ make test:tap_dance
 ## Keymap architecture (`keyboards/crkbd/rev4_1/standard/keymaps/raphaelsmadja/`)
 
 - `keymap.c` defines a 5-layer `keymaps[]` array using the `LAYOUT()` macro (36 main keys + 6 thumb keys, split 18/18 + 3/3):
-  - Layer 0: base QWERTY layer with a Hyper one-shot mod on `PLM` (`OSM(MOD_HYPR)`). `TRM` is `LT(2, KC_SPC)` (Space tap / layer 2 hold), `PRU` is Enter, and Escape is the `TRM`+`PLU` combo (`TLO`/`TLI`/`TRI` are physically removed).
+  - Layer 0: base QWERTY layer with a Hyper one-shot mod on `PLM` (`OSM(MOD_HYPR)`). `TRM` is `LT(2, KC_SPC)` (Space tap / layer 2 hold), `PRU` is Enter, and Escape is `PRU` on layer 2 (`TRM`+`PRU`) (`TLO`/`TLI`/`TRI` are physically removed).
   - Layer 1: symbols/numbers (accessed by holding `TLM`, `MO(1)`, on layer 0; `TLM` has no tap function). `TRM` on this layer is `TD(TD_BSPC)` (backspace, the layer 0 backspace key was removed as redundant with this); `TRO` on this layer is `LALT(KC_BSPC)` (word delete). `PLU` on this layer is `QK_BOOT` (bootloader entry) instead of a symbol.
   - Layer 2: navigation/media/screenshot keys (accessed by holding `TRM`, `LT(2, KC_SPC)`, on layer 0; tapping it types Space).
   - Layer 3: reached automatically when layers 1+2 are both active (tri-layer) — bootloader entry (`QK_BOOT`), RGB matrix controls, and window-management arrow keys.
