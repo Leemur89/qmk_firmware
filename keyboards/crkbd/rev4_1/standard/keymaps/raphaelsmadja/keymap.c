@@ -40,6 +40,8 @@ enum combos {
     COMBO_SFT_R,
     COMBO_SFT_CMD_R,
     COMBO_SFT_ALT_R,
+    COMBO_ENTER,
+    COMBO_ESC,
 };
 
 const uint16_t PROGMEM combo_alt_l[]     = {MO(1), KC_A, COMBO_END};
@@ -54,6 +56,10 @@ const uint16_t PROGMEM combo_cmd_r[]     = {LT(2, KC_SPC), KC_K, COMBO_END};
 const uint16_t PROGMEM combo_sft_r[]     = {LT(2, KC_SPC), KC_J, COMBO_END};
 const uint16_t PROGMEM combo_sft_cmd_r[] = {LT(2, KC_SPC), KC_J, KC_K, COMBO_END};
 const uint16_t PROGMEM combo_sft_alt_r[] = {LT(2, KC_SPC), KC_J, KC_SCLN, COMBO_END};
+// Enter and Escape live on combos since PRU is being physically removed.
+// Declared after the mod combos so process_combo_event() ignores them.
+const uint16_t PROGMEM combo_enter[]     = {MO(1), KC_B, COMBO_END};
+const uint16_t PROGMEM combo_esc[]       = {LT(2, KC_SPC), KC_P, COMBO_END};
 
 combo_t key_combos[] = {
     [COMBO_ALT_L]     = COMBO(combo_alt_l, KC_LALT),
@@ -68,6 +74,8 @@ combo_t key_combos[] = {
     [COMBO_SFT_R]     = COMBO(combo_sft_r, KC_LSFT),
     [COMBO_SFT_CMD_R] = COMBO(combo_sft_cmd_r, LSFT(KC_LGUI)),
     [COMBO_SFT_ALT_R] = COMBO(combo_sft_alt_r, LSFT(KC_LALT)),
+    [COMBO_ENTER]     = COMBO(combo_enter, KC_ENT),
+    [COMBO_ESC]       = COMBO(combo_esc, KC_ESC),
 };
 
 // A combo-mod must only apply to a key typed with the OPPOSITE hand from the
@@ -98,7 +106,7 @@ void process_combo_event(uint16_t combo_index, bool pressed) {
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 	[0] = LAYOUT(
-		LT(4, KC_TAB), KC_Q, KC_W, KC_E, KC_R, KC_T,                          KC_Y, KC_U, KC_I, KC_O, KC_P, KC_ENT,
+		LT(4, KC_TAB), KC_Q, KC_W, KC_E, KC_R, KC_T,                          KC_Y, KC_U, KC_I, KC_O, KC_P, KC_NO,
 		OSM(MOD_HYPR), KC_A, KC_S, KC_D, KC_F, KC_G,                          KC_H, KC_J, KC_K, KC_L, KC_SCLN, KC_QUOT,
 		KC_LSFT, KC_Z, KC_X, KC_C, KC_V, KC_B,                                KC_N, KC_M, KC_COMM, KC_DOT, KC_SLSH, KC_RSFT,
 		KC_NO, MO(1), KC_NO,                                                  KC_NO, LT(2, KC_SPC), HYPR_T(KC_BSPC)
@@ -110,7 +118,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 		KC_NO, KC_TRNS, KC_NO,                                                KC_NO, TD(TD_BSPC), LALT(KC_BSPC)
 	),
 	[2] = LAYOUT(
-		KC_TRNS, KC_NO, KC_NO, KC_NO, KC_F2, KC_NO,                           LCTL(LSFT(LALT(LGUI(KC_Y)))), KC_MPRV, KC_MNXT, KC_MPLY, LGUI(LSFT(KC_T)), KC_ESC,
+		KC_TRNS, KC_NO, KC_NO, KC_NO, KC_F2, KC_NO,                           LCTL(LSFT(LALT(LGUI(KC_Y)))), KC_MPRV, KC_MNXT, KC_MPLY, LGUI(LSFT(KC_T)), KC_NO,
 		KC_TRNS, KC_NO, KC_NO, KC_NO, KC_LSFT, KC_NO,                         KC_LEFT, KC_DOWN, KC_UP, KC_RGHT, LGUI(KC_GRV), LSFT(KC_BSLS),
 		KC_TRNS, KC_NO, LGUI(LSFT(KC_4)), KC_NO, KC_NO, KC_NO,                LGUI(KC_PPLS), LGUI(LSFT(KC_LBRC)), LGUI(LSFT(KC_RBRC)), LGUI(KC_PMNS), LGUI(KC_P0), KC_TRNS,
 		KC_NO, KC_TRNS, KC_NO,                                                KC_NO, KC_TRNS, KC_TRNS
@@ -122,10 +130,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 		KC_TRNS, KC_TRNS, KC_TRNS,                                            KC_TRNS, KC_TRNS, KC_TRNS
 	),
 	[4] = LAYOUT(
-		KC_TRNS, KC_TRNS, LGUI(KC_W), KC_TRNS, LGUI(KC_R), LGUI(KC_T),        LGUI(KC_LBRC), MS_WHLU, MS_WHLD, LGUI(KC_RBRC), KC_TRNS, QK_LLCK,
+		KC_TRNS, KC_TRNS, LGUI(KC_W), KC_TRNS, LGUI(KC_R), LGUI(KC_T),        LGUI(KC_LBRC), MS_WHLU, MS_WHLD, LGUI(KC_RBRC), KC_TRNS, KC_NO,
 		KC_TRNS, LGUI(KC_A), KC_TRNS, LGUI(KC_D), LGUI(KC_F), KC_TRNS,       MS_LEFT, MS_DOWN, MS_UP, MS_RGHT, KC_TRNS, KC_TRNS,
 		KC_TRNS, KC_TRNS, LGUI(KC_X), LGUI(KC_C), LGUI(KC_V), KC_TRNS,       LGUI(KC_PPLS), LGUI(LSFT(KC_LBRC)), LGUI(LSFT(KC_RBRC)), LGUI(KC_PMNS), LGUI(KC_P0), KC_TRNS,
-		KC_NO, KC_TRNS, KC_NO,                                                KC_NO, MS_BTN1, MS_BTN2
+		KC_NO, QK_LLCK, KC_NO,                                                KC_NO, MS_BTN1, MS_BTN2
 	)
 };
 
