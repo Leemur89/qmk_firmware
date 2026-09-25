@@ -242,7 +242,7 @@ static void rgb_matrix_update_layer_color(layer_state_t state) {
             rgb_matrix_sethsv_noeeprom(HSV_YELLOW);
             break;
         default:
-            rgb_matrix_mode_noeeprom(RGB_MATRIX_TYPING_HEATMAP);
+            rgb_matrix_mode_noeeprom(RGB_MATRIX_CUSTOM_PERSISTENT_HEATMAP);
             break;
     }
 }
@@ -301,5 +301,13 @@ void matrix_scan_user(void) {
 // serait sinon jamais remplacé par un flash ultérieur.
 void keyboard_post_init_user(void) {
     rgb_matrix_enable_noeeprom();
-    rgb_matrix_mode_noeeprom(RGB_MATRIX_TYPING_HEATMAP);
+    rgb_matrix_mode_noeeprom(RGB_MATRIX_CUSTOM_PERSISTENT_HEATMAP);
+}
+
+// Alimente la heatmap persistante (rgb_matrix_heatmap.c) en continu, quel
+// que soit le mode RGB affiché : tourne sur les deux moitiés.
+void persistent_heatmap_task(void);
+
+void housekeeping_task_user(void) {
+    persistent_heatmap_task();
 }
