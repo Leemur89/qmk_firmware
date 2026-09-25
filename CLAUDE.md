@@ -66,6 +66,12 @@ make clean
 
 The output is a `.uf2` file (RP2040 bootloader format) at the repo root, named like `crkbd_rev4_1_standard_raphaelsmadja.uf2`. Flashing requires physical access to the keyboard (put it in bootloader mode, then copy the `.uf2` to the mass-storage device) — this can't be done from this environment.
 
+**Which half to flash.** Each half runs its own copy of the firmware, but they don't do the same job:
+- The keymap (keycodes, layers, combos, tap-dance, mods) is only evaluated on the **master** — the half plugged into USB (normally the left). The slave just scans its matrix and sends raw row/col positions, so keymap-only changes work after flashing the master alone.
+- RGB is rendered **locally by each half** on its own LEDs: the master only syncs the mode number + HSV (`RGB_MATRIX_SPLIT` RPC). Custom effects (`rgb_matrix_user.inc`: persistent heatmap, mod shapes) and the heatmap's heat buffer run in the slave's own code, so any change to RGB effects/rendering, `rgb_matrix_user.inc`, or split-related `config.h`/`rules.mk` settings requires flashing **both halves** — otherwise the slave shows nothing (unknown mode) or the wrong effect (custom effect IDs are numbered by their order in `rgb_matrix_user.inc`, so adding/removing one shifts the others). Built-in modes like `SOLID_COLOR` still work on a stale slave, which makes the mismatch easy to miss.
+
+When in doubt, flash both halves.
+
 There is no build step needed to just edit the keymap; only run `make` to verify the firmware compiles after changes to `keymap.c` or `rules.mk`.
 
 ## Tests
