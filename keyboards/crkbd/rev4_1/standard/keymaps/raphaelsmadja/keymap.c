@@ -1,17 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 #include QMK_KEYBOARD_H
 
-// Tap Dance declarations
-enum {
-    TD_BSPC,
-};
-
-// Tap Dance definitions
-tap_dance_action_t tap_dance_actions[] = {
-    // Tap once for backspace, twice for opt+backspace
-    [TD_BSPC] = ACTION_TAP_DANCE_DOUBLE(KC_BSPC, LALT(KC_BSPC)),
-};
-
 // Home row mods via combo instead of tap-hold: holding the layer-1/layer-2
 // thumb key (TLM/TRM) together with a home row letter registers a modifier
 // for as long as both stay held, so there is no tap/hold timing to fight.
@@ -27,6 +16,9 @@ tap_dance_action_t tap_dance_actions[] = {
 // automatically (the longest fully-pressed combo wins), and a combo's output
 // keycode can itself carry a mod (e.g. LSFT(KC_LGUI)), which registers both
 // mod bits for as long as the combo is held - no extra code needed for that.
+//
+// Hyper (Ctrl+Shift+Opt+Cmd) sits on the index finger's inner column (G/H),
+// next to the Shift finger, the same way on both halves.
 enum combos {
     COMBO_ALT_L,
     COMBO_CTL_L,
@@ -34,12 +26,14 @@ enum combos {
     COMBO_SFT_L,
     COMBO_SFT_CMD_L,
     COMBO_SFT_ALT_L,
+    COMBO_HYPR_L,
     COMBO_ALT_R,
     COMBO_CTL_R,
     COMBO_CMD_R,
     COMBO_SFT_R,
     COMBO_SFT_CMD_R,
     COMBO_SFT_ALT_R,
+    COMBO_HYPR_R,
     COMBO_ENTER,
     COMBO_ESC,
 };
@@ -50,12 +44,14 @@ const uint16_t PROGMEM combo_cmd_l[]     = {MO(1), KC_D, COMBO_END};
 const uint16_t PROGMEM combo_sft_l[]     = {MO(1), KC_F, COMBO_END};
 const uint16_t PROGMEM combo_sft_cmd_l[] = {MO(1), KC_F, KC_D, COMBO_END};
 const uint16_t PROGMEM combo_sft_alt_l[] = {MO(1), KC_F, KC_A, COMBO_END};
+const uint16_t PROGMEM combo_hypr_l[]    = {MO(1), KC_G, COMBO_END};
 const uint16_t PROGMEM combo_alt_r[]     = {LT(2, KC_SPC), KC_SCLN, COMBO_END};
 const uint16_t PROGMEM combo_ctl_r[]     = {LT(2, KC_SPC), KC_L, COMBO_END};
 const uint16_t PROGMEM combo_cmd_r[]     = {LT(2, KC_SPC), KC_K, COMBO_END};
 const uint16_t PROGMEM combo_sft_r[]     = {LT(2, KC_SPC), KC_J, COMBO_END};
 const uint16_t PROGMEM combo_sft_cmd_r[] = {LT(2, KC_SPC), KC_J, KC_K, COMBO_END};
 const uint16_t PROGMEM combo_sft_alt_r[] = {LT(2, KC_SPC), KC_J, KC_SCLN, COMBO_END};
+const uint16_t PROGMEM combo_hypr_r[]    = {LT(2, KC_SPC), KC_H, COMBO_END};
 // Enter and Escape live on combos since PRU is being physically removed.
 // Declared after the mod combos so process_combo_event() ignores them.
 const uint16_t PROGMEM combo_enter[]     = {MO(1), KC_B, COMBO_END};
@@ -68,12 +64,14 @@ combo_t key_combos[] = {
     [COMBO_SFT_L]     = COMBO(combo_sft_l, KC_LSFT),
     [COMBO_SFT_CMD_L] = COMBO(combo_sft_cmd_l, LSFT(KC_LGUI)),
     [COMBO_SFT_ALT_L] = COMBO(combo_sft_alt_l, LSFT(KC_LALT)),
+    [COMBO_HYPR_L]    = COMBO(combo_hypr_l, LCTL(LSFT(LALT(KC_LGUI)))),
     [COMBO_ALT_R]     = COMBO(combo_alt_r, KC_LALT),
     [COMBO_CTL_R]     = COMBO(combo_ctl_r, KC_LCTL),
     [COMBO_CMD_R]     = COMBO(combo_cmd_r, KC_LGUI),
     [COMBO_SFT_R]     = COMBO(combo_sft_r, KC_LSFT),
     [COMBO_SFT_CMD_R] = COMBO(combo_sft_cmd_r, LSFT(KC_LGUI)),
     [COMBO_SFT_ALT_R] = COMBO(combo_sft_alt_r, LSFT(KC_LALT)),
+    [COMBO_HYPR_R]    = COMBO(combo_hypr_r, LCTL(LSFT(LALT(KC_LGUI)))),
     [COMBO_ENTER]     = COMBO(combo_enter, KC_ENT),
     [COMBO_ESC]       = COMBO(combo_esc, KC_ESC),
 };
@@ -89,12 +87,12 @@ static bool     active_combo_left = false;
 static uint16_t suppressed_keycode = KC_NO;
 
 void process_combo_event(uint16_t combo_index, bool pressed) {
-    if (combo_index > COMBO_SFT_ALT_R) {
+    if (combo_index > COMBO_HYPR_R) {
         return;
     }
     if (pressed) {
         active_combo_mod  = key_combos[combo_index].keycode;
-        active_combo_left = combo_index <= COMBO_SFT_ALT_L;
+        active_combo_left = combo_index <= COMBO_HYPR_L;
     } else {
         active_combo_mod = KC_NO;
     }
@@ -107,19 +105,19 @@ void process_combo_event(uint16_t combo_index, bool pressed) {
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 	[0] = LAYOUT(
 		LT(4, KC_TAB), KC_Q, KC_W, KC_E, KC_R, KC_T,                          KC_Y, KC_U, KC_I, KC_O, KC_P, KC_NO,
-		OSM(MOD_HYPR), KC_A, KC_S, KC_D, KC_F, KC_G,                          KC_H, KC_J, KC_K, KC_L, KC_SCLN, KC_QUOT,
+		KC_NO, KC_A, KC_S, KC_D, KC_F, KC_G,                          KC_H, KC_J, KC_K, KC_L, KC_SCLN, KC_QUOT,
 		KC_LSFT, KC_Z, KC_X, KC_C, KC_V, KC_B,                                KC_N, KC_M, KC_COMM, KC_DOT, KC_SLSH, KC_RSFT,
-		KC_NO, MO(1), KC_NO,                                                  KC_NO, LT(2, KC_SPC), HYPR_T(KC_BSPC)
+		KC_NO, MO(1), KC_NO,                                                  KC_NO, LT(2, KC_SPC), KC_BSPC
 	),
 	[1] = LAYOUT(
 		QK_BOOT, LSFT(KC_1), LSFT(KC_2), LSFT(KC_3), LSFT(KC_4), LSFT(KC_5),   LSFT(KC_6), LSFT(KC_7), LSFT(KC_8), LSFT(KC_9), LSFT(KC_0), KC_TRNS,
-		KC_TRNS, KC_1, KC_2, KC_3, LSFT_T(KC_4), KC_5,                        KC_MINS, RSFT_T(KC_EQL), KC_GRV, KC_LBRC, KC_RBRC, KC_BSLS,
+		KC_NO, KC_1, KC_2, KC_3, LSFT_T(KC_4), KC_5,                        KC_MINS, RSFT_T(KC_EQL), KC_GRV, KC_LBRC, KC_RBRC, KC_BSLS,
 		KC_TRNS, KC_6, KC_7, KC_8, KC_9, KC_0,                                LSFT(KC_MINS), LSFT(KC_EQL), LSFT(KC_GRV), LSFT(KC_LBRC), LSFT(KC_RBRC), KC_TRNS,
-		KC_NO, KC_TRNS, KC_NO,                                                KC_NO, TD(TD_BSPC), LALT(KC_BSPC)
+		KC_NO, KC_TRNS, KC_NO,                                                KC_NO, KC_TRNS, LALT(KC_BSPC)
 	),
 	[2] = LAYOUT(
 		KC_TRNS, KC_NO, KC_NO, KC_NO, KC_F2, KC_NO,                           LCTL(LSFT(LALT(LGUI(KC_Y)))), KC_MPRV, KC_MNXT, KC_MPLY, LGUI(LSFT(KC_T)), KC_NO,
-		KC_TRNS, KC_NO, KC_NO, KC_NO, KC_LSFT, KC_NO,                         KC_LEFT, KC_DOWN, KC_UP, KC_RGHT, LGUI(KC_GRV), LSFT(KC_BSLS),
+		KC_NO, KC_NO, KC_NO, KC_NO, KC_LSFT, KC_NO,                         KC_LEFT, KC_DOWN, KC_UP, KC_RGHT, LGUI(KC_GRV), LSFT(KC_BSLS),
 		KC_TRNS, KC_NO, LGUI(LSFT(KC_4)), KC_NO, KC_NO, KC_NO,                LGUI(KC_PPLS), LGUI(LSFT(KC_LBRC)), LGUI(LSFT(KC_RBRC)), LGUI(KC_PMNS), LGUI(KC_P0), KC_TRNS,
 		KC_NO, KC_TRNS, KC_NO,                                                KC_NO, KC_TRNS, KC_TRNS
 	),
@@ -131,7 +129,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 	),
 	[4] = LAYOUT(
 		KC_TRNS, KC_TRNS, LGUI(KC_W), KC_TRNS, LGUI(KC_R), LGUI(KC_T),        LGUI(KC_LBRC), MS_WHLU, MS_WHLD, LGUI(KC_RBRC), KC_TRNS, KC_NO,
-		KC_TRNS, LGUI(KC_A), KC_TRNS, LGUI(KC_D), LGUI(KC_F), KC_TRNS,       MS_LEFT, MS_DOWN, MS_UP, MS_RGHT, KC_TRNS, KC_TRNS,
+		KC_NO, LGUI(KC_A), KC_TRNS, LGUI(KC_D), LGUI(KC_F), KC_TRNS,       MS_LEFT, MS_DOWN, MS_UP, MS_RGHT, KC_TRNS, KC_TRNS,
 		KC_TRNS, KC_TRNS, LGUI(KC_X), LGUI(KC_C), LGUI(KC_V), KC_TRNS,       LGUI(KC_PPLS), LGUI(LSFT(KC_LBRC)), LGUI(LSFT(KC_RBRC)), LGUI(KC_PMNS), LGUI(KC_P0), KC_TRNS,
 		KC_NO, QK_LLCK, KC_NO,                                                KC_NO, MS_BTN1, MS_BTN2
 	)
@@ -143,27 +141,25 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 // par le RPC intégré de QMK (RGB_MATRIX_SPLIT, activé via rgb_matrix.split_count
 // dans keyboard.json). Ce canal existe indépendamment de nos changements et ne
 // nécessite donc aucune transaction supplémentaire côté split_common.
-// Hyper est actif soit via le hold de TRO (HYPR_T) ou de PLM (OSM(MOD_HYPR)),
-// mods "réels" via get_mods(), soit via le tap one-shot de PLM, suivi via
-// get_oneshot_mods() tant qu'il n'a pas été consommé par la touche suivante.
+// Hyper est actif via les combos TLM+G / TRM+H (mods "réels", get_mods()).
 static bool is_hyper_active(void) {
-    return ((get_mods() | get_oneshot_mods()) & MOD_HYPR) == MOD_HYPR;
+    return (get_mods() & MOD_HYPR) == MOD_HYPR;
 }
 
 static bool is_cmd_active(void) {
-    return ((get_mods() | get_oneshot_mods()) & MOD_MASK_GUI) != 0;
+    return (get_mods() & MOD_MASK_GUI) != 0;
 }
 
 static bool is_ctrl_active(void) {
-    return ((get_mods() | get_oneshot_mods()) & MOD_MASK_CTRL) != 0;
+    return (get_mods() & MOD_MASK_CTRL) != 0;
 }
 
 static bool is_opt_active(void) {
-    return ((get_mods() | get_oneshot_mods()) & MOD_MASK_ALT) != 0;
+    return (get_mods() & MOD_MASK_ALT) != 0;
 }
 
 static bool is_shift_active(void) {
-    return ((get_mods() | get_oneshot_mods()) & MOD_MASK_SHIFT) != 0;
+    return (get_mods() & MOD_MASK_SHIFT) != 0;
 }
 
 // Formes RGB par modificateur (voir rgb_matrix_shapes.c) : carré sur Cmd,
@@ -180,7 +176,7 @@ enum {
 };
 
 // Hyper est défini comme Ctrl+Shift+Alt+Gui combinés (MOD_HYPR) : dès qu'il
-// est actif, get_mods()/get_oneshot_mods() porte aussi les bits Ctrl/Shift/
+// est actif, get_mods() porte aussi les bits Ctrl/Shift/
 // Alt/Gui, ce qui ferait à tort passer is_cmd_active()/is_ctrl_active()/
 // is_opt_active()/is_shift_active() à true et superposerait les 4 formes.
 // Hyper doit donc rester exclusif des 4 autres pour le choix de la forme.
@@ -283,7 +279,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 }
 
 // layer_state_set_user ne se redéclenche pas quand seuls les mods changent
-// (hold de TRO/PLM ou arm/consommation du one-shot de PLM) : on repère ces
+// (combos de mods sur TLM/TRM) : on repère ces
 // transitions ici pour rafraîchir la couleur sans repasser par un changement
 // de layer.
 void matrix_scan_user(void) {

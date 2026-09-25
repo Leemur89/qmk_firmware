@@ -25,14 +25,14 @@ When discussing this keymap, keys are referred to by these names instead of raw 
 | | Gauche (left) | Droite (right) |
 |---|---|---|
 | **Haut** (top) | `PLU` = `LT(4, KC_TAB)` — Tab tap / layer 4 hold; on layer 1, `PLU` is overridden to `QK_BOOT` (bootloader entry) | `PRU` — **physically removed**, `KC_NO` on every layer (Enter and Escape are combos, the layer 4 lock moved to `TLM`) |
-| **Milieu** (home row) | `PLM` = `OSM(MOD_HYPR)` — Hyper (one-shot on tap, held mod on hold); Ctrl is on a combo instead | `PRM` = `KC_QUOT` — the `'` key |
+| **Milieu** (home row) | `PLM` — `KC_NO` on layers 0/1/2/4 (Hyper moved to the `TLM`+`G` / `TRM`+`H` combos); only `RM_TOGG` on layer 3 | `PRM` = `KC_QUOT` — the `'` key |
 | **Bas** (bottom) | `PLD` = `KC_LSFT` | `PRD` = `KC_RSFT` |
 
 **Thumb keys** — the 3-key mod cluster per side, named by distance from the keyboard's center gap. Each also has a 3-letter acronym (Thumb/Left-Right/Inner-Middle-Outer):
 | | Gauche (left) | Droit (right) |
 |---|---|---|
-| **Extérieur** (outermost, away from center) | `TLO` — **physically removed**, `KC_NO` on every layer | `TRO` = `HYPR_T(KC_BSPC)` — Backspace tap / Hyper hold; on layer 1, `TRO` is `LALT(KC_BSPC)` (word delete, no hold function) |
-| **Milieu** | `TLM` = `MO(1)` — layer 1 hold, no tap function; `TLM`+`B` combo = Enter; on layer 4, `TLM` is `QK_LLCK` (layer lock) | `TRM` = `LT(2, KC_SPC)` — Space tap / layer 2 hold; `TRM`+`P` combo = Escape |
+| **Extérieur** (outermost, away from center) | `TLO` — **physically removed**, `KC_NO` on every layer | `TRO` = `KC_BSPC` — Backspace, no hold function; on layer 1, `TRO` is `LALT(KC_BSPC)` (word delete) |
+| **Milieu** | `TLM` = `MO(1)` — layer 1 hold, no tap function; `TLM`+`B` combo = Enter, `TLM`+`G` combo = Hyper; on layer 4, `TLM` is `QK_LLCK` (layer lock) | `TRM` = `LT(2, KC_SPC)` — Space tap / layer 2 hold; `TRM`+`P` combo = Escape, `TRM`+`H` combo = Hyper |
 | **Intérieur** (innermost, next to center) | `TLI` — **physically removed**, `KC_NO` on every layer | `TRI` — **physically removed**, `KC_NO` on every layer |
 
 These names describe layer 0 (the base layer); the same position names apply on other layers even when the keycode there differs (e.g. "pinky droite haut" is `QK_BOOT` on layer 3, `KC_ESC` on layer 0).
@@ -81,14 +81,13 @@ make test:tap_dance
 ## Keymap architecture (`keyboards/crkbd/rev4_1/standard/keymaps/raphaelsmadja/`)
 
 - `keymap.c` defines a 5-layer `keymaps[]` array using the `LAYOUT()` macro (36 main keys + 6 thumb keys, split 18/18 + 3/3):
-  - Layer 0: base QWERTY layer with a Hyper one-shot mod on `PLM` (`OSM(MOD_HYPR)`). `TRM` is `LT(2, KC_SPC)` (Space tap / layer 2 hold), Enter is the `TLM`+`B` combo and Escape the `TRM`+`P` combo (`TLO`/`TLI`/`TRI`/`PRU` are physically removed).
-  - Layer 1: symbols/numbers (accessed by holding `TLM`, `MO(1)`, on layer 0; `TLM` has no tap function). `TRM` on this layer is `TD(TD_BSPC)` (backspace, the layer 0 backspace key was removed as redundant with this); `TRO` on this layer is `LALT(KC_BSPC)` (word delete). `PLU` on this layer is `QK_BOOT` (bootloader entry) instead of a symbol.
+  - Layer 0: base QWERTY layer. Mods (Alt/Ctrl/Cmd/Shift on the home row, Hyper on `G`/`H`) are all combos with `TLM`/`TRM`; `PLM` is empty. `TRM` is `LT(2, KC_SPC)` (Space tap / layer 2 hold), Enter is the `TLM`+`B` combo and Escape the `TRM`+`P` combo (`TLO`/`TLI`/`TRI`/`PRU` are physically removed).
+  - Layer 1: symbols/numbers (accessed by holding `TLM`, `MO(1)`, on layer 0; `TLM` has no tap function). `TRM` on this layer is `KC_TRNS` (falls through to `LT(2, KC_SPC)`); `TRO` on this layer is `LALT(KC_BSPC)` (word delete). `PLU` on this layer is `QK_BOOT` (bootloader entry) instead of a symbol.
   - Layer 2: navigation/media/screenshot keys (accessed by holding `TRM`, `LT(2, KC_SPC)`, on layer 0; tapping it types Space).
   - Layer 3: reached automatically when layers 1+2 are both active (tri-layer) — bootloader entry (`QK_BOOT`), RGB matrix controls, and window-management arrow keys.
   - Layer 4: mouse keys layer, held via `PLU` (`LT(4, KC_TAB)`); tapping `TLM` (`QK_LLCK`) while on it locks/unlocks the layer; `TRM` is left click (`MS_BTN1`) and `TRO` is right click (`MS_BTN2`) while on this layer.
-  - Two tap-dances: `TD_BSPC` (tap = backspace, double-tap = Option+Backspace/word delete) and `TD_PRU` (tap = Escape, double-tap = toggle/lock layer 4 via `layer_invert(4)` — done manually since `TG()` can't be passed to the simple tap-dance macros).
 - `layer_state_set_user()` wires up the tri-layer behavior (`update_tri_layer_state(state, 1, 2, 3)`), making layer 3 accessible by holding both layer-1 and layer-2 triggers together. It also drives the per-layer RGB color (`rgb_matrix_update_layer_color()`): layer 0 = a custom persistent typing heatmap (`rgb_matrix_heatmap.c`: its heat buffer is fed from `housekeeping_task_user()` on both halves regardless of the displayed mode, so it survives layer/mod-shape color switches instead of being reset like QMK's built-in `TYPING_HEATMAP`), layers 1-4 = solid blue/orange/purple/green via `rgb_matrix_mode_noeeprom()`/`rgb_matrix_sethsv_noeeprom()`. This applies to **both halves** — it piggybacks on QMK's built-in `RGB_MATRIX_SPLIT` sync RPC (auto-enabled by `rgb_matrix.split_count` in `keyboard.json`), which was already syncing `rgb_matrix_config` to the slave, rather than syncing `layer_state` itself. Syncing `layer_state` directly (a new split transaction) was tried repeatedly in the past and broke matrix scanning on the right half every time — don't reintroduce that approach; see the history in `config.h`.
-- `rules.mk` enables `MOUSEKEY_ENABLE`, `RGB_MATRIX_ENABLE`, and `TAP_DANCE_ENABLE` for this keymap specifically.
+- `rules.mk` enables `MOUSEKEY_ENABLE`, `RGB_MATRIX_ENABLE`, `COMBO_ENABLE` and `LAYER_LOCK_ENABLE` for this keymap specifically (no tap-dance anymore).
 
 Keyboard-level config (matrix pins, RGB matrix LED positions, split/handedness config, available `LAYOUT_*` macros) lives one level up in `keyboards/crkbd/rev4_1/standard/keyboard.json` and `keyboards/crkbd/rev4_1/info.json` — only touch these if changing the physical hardware config (not needed for keymap/layer/behavior changes).
 
