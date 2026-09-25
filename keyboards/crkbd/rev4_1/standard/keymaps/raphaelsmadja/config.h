@@ -1,10 +1,11 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 #pragma once
 
-// Layer 0 utilise l'effet "typing heatmap" (typing_heatmap est déjà activé
-// par info.json ; forcé au boot dans keymap.c car RGB_MATRIX_DEFAULT_MODE
-// ne s'applique qu'à une EEPROM vierge)
-#define RGB_MATRIX_DEFAULT_MODE RGB_MATRIX_TYPING_HEATMAP
+// Layer 0 utilise une heatmap persistante (rgb_matrix_heatmap.c, variante de
+// la "typing heatmap" QMK qui survit aux changements de layer ; forcée au
+// boot dans keymap.c car RGB_MATRIX_DEFAULT_MODE ne s'applique qu'à une
+// EEPROM vierge)
+#define RGB_MATRIX_DEFAULT_MODE RGB_MATRIX_CUSTOM_PERSISTENT_HEATMAP
 
 // NOTE HISTORIQUE : synchroniser layer_state vers la moitié droite (pour les
 // couleurs par layer) avait cassé le scan clavier côté droit à 5 reprises,
@@ -16,3 +17,10 @@
 // intégré à QMK (activé via rgb_matrix.split_count dans keyboard.json)
 // propager ça vers l'esclave — aucune transaction supplémentaire n'est donc
 // ajoutée au split_common.
+
+// Réglages de la heatmap (lus par rgb_matrix_heatmap.c). Refroidissement
+// lent : chaque touche perd 1 point de "chaleur" toutes les N ms (défaut
+// QMK : 25 ms, soit ~0,8 s pour qu'un appui isolé s'efface). À 200 ms, un appui isolé reste visible ~6 s et une zone
+// saturée (255) met ~50 s à refroidir. Augmenter pour une persistance
+// encore plus longue.
+#define RGB_MATRIX_TYPING_HEATMAP_DECREASE_DELAY_MS 200
