@@ -16,3 +16,10 @@
 // intégré à QMK (activé via rgb_matrix.split_count dans keyboard.json)
 // propager ça vers l'esclave — aucune transaction supplémentaire n'est donc
 // ajoutée au split_common.
+
+// Heatmap qui persiste plus longtemps : chaque touche perd 1 point de
+// "chaleur" toutes les N ms (défaut QMK : 25 ms, soit ~0,8 s pour qu'un appui
+// isolé s'efface). À 200 ms, un appui isolé reste visible ~6 s et une zone
+// saturée (255) met ~50 s à refroidir. Augmenter pour une persistance
+// encore plus longue.
+#define RGB_MATRIX_TYPING_HEATMAP_DECREASE_DELAY_MS 200
