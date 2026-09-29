@@ -19,7 +19,7 @@
 // ajoutée au split_common.
 
 // Réglages de la heatmap (lus par rgb_matrix_heatmap.c ; les couleurs sont
-// dans la palette heat_palette[] de ce fichier).
+// dans la palette heat_palette[] de ce fichier, thème "métal chauffé").
 //
 // Chauffe : chaleur ajoutée à la touche appuyée (INCREASE_STEP, défaut QMK
 // 32) et au maximum à ses voisines (AREA_LIMIT, défaut QMK 16). Divisés par 2

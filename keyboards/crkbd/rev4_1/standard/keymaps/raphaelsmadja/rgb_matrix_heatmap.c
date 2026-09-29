@@ -30,20 +30,26 @@
 // 255 = saturée), interpolée linéairement entre les paliers. Le premier palier
 // doit être à 0 et le dernier à 255 ; on peut en ajouter/retirer librement.
 // La luminosité globale (réglage RGB, plafonné par max_brightness) s'applique
-// par-dessus. Valeurs par défaut = rendu de la heatmap QMK : noir -> bleu ->
-// cyan -> vert -> jaune -> rouge.
+// par-dessus.
+//
+// Thème "métal chauffé" : la touche rougeoie d'abord (rouge sombre puis
+// cerise), passe à l'orange puis au jaune, blanchit, et finit bleu électrique
+// quand elle est saturée (comme un arc / chalumeau). Le blanc entre le jaune
+// et le bleu évite un passage par du gris terne. L'orange a peu de vert car
+// la LED verte domine vite sur ces LED.
 typedef struct {
     uint8_t heat;
     uint8_t r, g, b;
 } heat_color_stop_t;
 
 static const heat_color_stop_t heat_palette[] = {
-    {0, 0, 0, 0},       // éteint
-    {85, 0, 0, 255},    // bleu
-    {128, 0, 255, 255}, // cyan
-    {170, 0, 255, 0},   // vert
-    {213, 255, 255, 0}, // jaune
-    {255, 255, 0, 0},   // rouge
+    {0, 0, 0, 0},         // éteint
+    {40, 96, 0, 0},       // rouge sombre (métal qui commence à rougeoyer)
+    {90, 255, 0, 0},      // rouge cerise
+    {140, 255, 70, 0},    // orange
+    {185, 255, 190, 0},   // jaune
+    {225, 255, 255, 255}, // blanc
+    {255, 30, 110, 255},  // bleu électrique
 };
 
 static rgb_t persistent_heatmap_color(uint8_t heat, uint8_t brightness) {
