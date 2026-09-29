@@ -26,6 +26,42 @@
 #    define RGB_MATRIX_TYPING_HEATMAP_AREA_LIMIT 16
 #endif
 
+// Palette : couleur affichée en fonction de la chaleur (0 = touche froide,
+// 255 = saturée), interpolée linéairement entre les paliers. Le premier palier
+// doit être à 0 et le dernier à 255 ; on peut en ajouter/retirer librement.
+// La luminosité globale (réglage RGB, plafonné par max_brightness) s'applique
+// par-dessus. Valeurs par défaut = rendu de la heatmap QMK : noir -> bleu ->
+// cyan -> vert -> jaune -> rouge.
+typedef struct {
+    uint8_t heat;
+    uint8_t r, g, b;
+} heat_color_stop_t;
+
+static const heat_color_stop_t heat_palette[] = {
+    {0, 0, 0, 0},       // éteint
+    {85, 0, 0, 255},    // bleu
+    {128, 0, 255, 255}, // cyan
+    {170, 0, 255, 0},   // vert
+    {213, 255, 255, 0}, // jaune
+    {255, 255, 0, 0},   // rouge
+};
+
+static rgb_t persistent_heatmap_color(uint8_t heat, uint8_t brightness) {
+    uint8_t i = 1;
+    while (i < ARRAY_SIZE(heat_palette) - 1 && heat > heat_palette[i].heat) {
+        i++;
+    }
+    const heat_color_stop_t *lo   = &heat_palette[i - 1];
+    const heat_color_stop_t *hi   = &heat_palette[i];
+    uint8_t                  frac = (uint16_t)(heat - lo->heat) * 255 / (hi->heat - lo->heat);
+    rgb_t                    rgb  = {
+        .r = scale8(lerp8by8(lo->r, hi->r, frac), brightness),
+        .g = scale8(lerp8by8(lo->g, hi->g, frac), brightness),
+        .b = scale8(lerp8by8(lo->b, hi->b, frac), brightness),
+    };
+    return rgb;
+}
+
 static uint8_t      persistent_heat[MATRIX_ROWS][MATRIX_COLS];
 static matrix_row_t persistent_heat_prev[MATRIX_ROWS];
 static uint16_t     persistent_heat_timer;
@@ -84,6 +120,8 @@ void persistent_heatmap_task(void) {
 bool PERSISTENT_HEATMAP(effect_params_t *params) {
     RGB_MATRIX_USE_LIMITS(led_min, led_max);
 
+    uint8_t brightness = MIN(rgb_matrix_config.hsv.v, RGB_MATRIX_MAXIMUM_BRIGHTNESS);
+
     for (uint8_t row = 0; row < MATRIX_ROWS; row++) {
         for (uint8_t col = 0; col < MATRIX_COLS; col++) {
             uint8_t led[LED_HITS_TO_REMEMBER];
@@ -93,8 +131,7 @@ bool PERSISTENT_HEATMAP(effect_params_t *params) {
                 if (led[i] < led_min || led[i] >= led_max || !HAS_ANY_FLAGS(g_led_config.flags[led[i]], params->flags)) {
                     continue;
                 }
-                hsv_t hsv = {170 - qsub8(val, 85), rgb_matrix_config.hsv.s, scale8((qadd8(170, val) - 170) * 3, rgb_matrix_config.hsv.v)};
-                rgb_t rgb = rgb_matrix_hsv_to_rgb(hsv);
+                rgb_t rgb = persistent_heatmap_color(val, brightness);
                 rgb_matrix_set_color(led[i], rgb.r, rgb.g, rgb.b);
             }
         }
