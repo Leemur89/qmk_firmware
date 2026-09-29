@@ -18,9 +18,17 @@
 // propager ça vers l'esclave — aucune transaction supplémentaire n'est donc
 // ajoutée au split_common.
 
-// Réglages de la heatmap (lus par rgb_matrix_heatmap.c). Refroidissement
-// lent : chaque touche perd 1 point de "chaleur" toutes les N ms (défaut
-// QMK : 25 ms, soit ~0,8 s pour qu'un appui isolé s'efface). À 200 ms, un appui isolé reste visible ~6 s et une zone
-// saturée (255) met ~50 s à refroidir. Augmenter pour une persistance
-// encore plus longue.
+// Réglages de la heatmap (lus par rgb_matrix_heatmap.c ; les couleurs sont
+// dans la palette heat_palette[] de ce fichier, thème "métal chauffé").
+//
+// Chauffe : chaleur ajoutée à la touche appuyée (INCREASE_STEP, défaut QMK
+// 32) et au maximum à ses voisines (AREA_LIMIT, défaut QMK 16). Divisés par 2
+// ici : il faut deux fois plus d'appuis pour passer d'une couleur à la
+// suivante (saturation à 16 appuis au lieu de 8).
+#define RGB_MATRIX_TYPING_HEATMAP_INCREASE_STEP 16
+#define RGB_MATRIX_TYPING_HEATMAP_AREA_LIMIT 8
+
+// Refroidissement : chaque touche perd 1 point de chaleur toutes les N ms
+// (défaut QMK : 25 ms). À 200 ms, une zone saturée (255) met ~50 s à
+// refroidir, et un appui isolé (16) reste visible ~3 s.
 #define RGB_MATRIX_TYPING_HEATMAP_DECREASE_DELAY_MS 200
