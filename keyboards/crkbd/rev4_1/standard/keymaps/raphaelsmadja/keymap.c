@@ -37,6 +37,7 @@ enum combos {
     COMBO_ENTER,
     COMBO_ESC,
     COMBO_BOOT,
+    COMBO_QUOTE,
 };
 
 const uint16_t PROGMEM combo_alt_l[]     = {MO(1), KC_A, COMBO_END};
@@ -60,6 +61,9 @@ const uint16_t PROGMEM combo_esc[]       = {LT(2, KC_SPC), KC_P, COMBO_END};
 // Bootloader: TLM (layer 1 held) + Q+W+E, left half only, so it stays
 // reachable even when the right half is unresponsive.
 const uint16_t PROGMEM combo_boot[]      = {MO(1), KC_Q, KC_W, KC_E, COMBO_END};
+// Apostrophe on `,` + `.` (two adjacent fingers, same row) since PRM is being
+// physically removed.
+const uint16_t PROGMEM combo_quote[]     = {KC_COMM, KC_DOT, COMBO_END};
 
 combo_t key_combos[] = {
     [COMBO_ALT_L]     = COMBO(combo_alt_l, KC_LALT),
@@ -79,6 +83,7 @@ combo_t key_combos[] = {
     [COMBO_ENTER]     = COMBO(combo_enter, KC_ENT),
     [COMBO_ESC]       = COMBO(combo_esc, KC_ESC),
     [COMBO_BOOT]      = COMBO(combo_boot, QK_BOOT),
+    [COMBO_QUOTE]     = COMBO(combo_quote, KC_QUOT),
 };
 
 // A combo-mod must only apply to a key typed with the OPPOSITE hand from the
@@ -122,7 +127,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 	),
 	[2] = LAYOUT(
 		KC_TRNS, KC_NO, KC_NO, KC_NO, KC_F2, KC_NO,                           LCTL(LSFT(LALT(LGUI(KC_Y)))), KC_MPRV, KC_MNXT, KC_MPLY, LGUI(LSFT(KC_T)), KC_NO,
-		KC_NO, KC_NO, KC_NO, KC_NO, KC_LSFT, KC_NO,                         KC_LEFT, KC_DOWN, KC_UP, KC_RGHT, LGUI(KC_GRV), LSFT(KC_BSLS),
+		KC_NO, KC_NO, KC_BSLS, LSFT(KC_BSLS), KC_LSFT, KC_NO,                         KC_LEFT, KC_DOWN, KC_UP, KC_RGHT, LGUI(KC_GRV), LSFT(KC_BSLS),
 		KC_TRNS, KC_NO, LGUI(LSFT(KC_4)), KC_NO, KC_NO, KC_NO,                LGUI(KC_PPLS), LGUI(LSFT(KC_LBRC)), LGUI(LSFT(KC_RBRC)), LGUI(KC_PMNS), LGUI(KC_P0), KC_TRNS,
 		KC_NO, KC_TRNS, KC_NO,                                                KC_NO, KC_TRNS, KC_TRNS
 	),

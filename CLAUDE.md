@@ -25,7 +25,7 @@ When discussing this keymap, keys are referred to by these names instead of raw 
 | | Gauche (left) | Droite (right) |
 |---|---|---|
 | **Haut** (top) | `PLU` = `LT(4, KC_TAB)` — Tab tap / layer 4 hold; `KC_NO` on layers 1 and 3 | `PRU` — **physically removed**, `KC_NO` on every layer (Enter and Escape are combos, the layer 4 lock moved to `TLM`) |
-| **Milieu** (home row) | `PLM` — `KC_NO` on layers 0/1/2/4 (Hyper moved to the `TLM`+`G` / `TRM`+`H` combos); only `RM_TOGG` on layer 3 | `PRM` = `KC_QUOT` — the `'` key |
+| **Milieu** (home row) | `PLM` — `KC_NO` on layers 0/1/2/4 (Hyper moved to the `TLM`+`G` / `TRM`+`H` combos); only `RM_TOGG` on layer 3 | `PRM` = `KC_QUOT` — the `'` key (also available as the `,`+`.` combo, phase A of removing PRM; `\` and `|` moved to layer 2 `S`/`D`) |
 | **Bas** (bottom) | `PLD` = `KC_LSFT` | `PRD` = `KC_RSFT` |
 
 **Thumb keys** — the 3-key mod cluster per side, named by distance from the keyboard's center gap. Each also has a 3-letter acronym (Thumb/Left-Right/Inner-Middle-Outer):
