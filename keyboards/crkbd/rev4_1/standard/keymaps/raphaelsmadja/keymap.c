@@ -38,6 +38,7 @@ enum combos {
     COMBO_ESC,
     COMBO_BOOT,
     COMBO_QUOTE,
+    COMBO_ENTER_JK,
 };
 
 const uint16_t PROGMEM combo_alt_l[]     = {MO(1), KC_A, COMBO_END};
@@ -64,6 +65,10 @@ const uint16_t PROGMEM combo_boot[]      = {MO(1), KC_Q, KC_W, KC_E, COMBO_END};
 // Apostrophe on `,` + `.` (two adjacent fingers, same row) since PRM is being
 // physically removed.
 const uint16_t PROGMEM combo_quote[]     = {KC_COMM, KC_DOT, COMBO_END};
+// Enter also on J+K (two adjacent right-hand fingers on the home row), trial
+// replacement for the TLM+B stretch; TLM+B is kept as a fallback. Declared
+// after the TRM+J+K mod combos so those win when TRM is held.
+const uint16_t PROGMEM combo_enter_jk[]  = {KC_J, KC_K, COMBO_END};
 
 combo_t key_combos[] = {
     [COMBO_ALT_L]     = COMBO(combo_alt_l, KC_LALT),
@@ -84,6 +89,7 @@ combo_t key_combos[] = {
     [COMBO_ESC]       = COMBO(combo_esc, KC_ESC),
     [COMBO_BOOT]      = COMBO(combo_boot, QK_BOOT),
     [COMBO_QUOTE]     = COMBO(combo_quote, KC_QUOT),
+    [COMBO_ENTER_JK]  = COMBO(combo_enter_jk, KC_ENT),
 };
 
 // A combo-mod must only apply to a key typed with the OPPOSITE hand from the
