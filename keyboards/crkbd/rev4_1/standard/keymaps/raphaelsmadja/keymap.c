@@ -36,6 +36,7 @@ enum combos {
     COMBO_HYPR_R,
     COMBO_ENTER,
     COMBO_ESC,
+    COMBO_BOOT,
 };
 
 const uint16_t PROGMEM combo_alt_l[]     = {MO(1), KC_A, COMBO_END};
@@ -56,6 +57,9 @@ const uint16_t PROGMEM combo_hypr_r[]    = {LT(2, KC_SPC), KC_H, COMBO_END};
 // Declared after the mod combos so process_combo_event() ignores them.
 const uint16_t PROGMEM combo_enter[]     = {MO(1), KC_B, COMBO_END};
 const uint16_t PROGMEM combo_esc[]       = {LT(2, KC_SPC), KC_P, COMBO_END};
+// Bootloader: TLM (layer 1 held) + Q+W+E, left half only, so it stays
+// reachable even when the right half is unresponsive.
+const uint16_t PROGMEM combo_boot[]      = {MO(1), KC_Q, KC_W, KC_E, COMBO_END};
 
 combo_t key_combos[] = {
     [COMBO_ALT_L]     = COMBO(combo_alt_l, KC_LALT),
@@ -74,6 +78,7 @@ combo_t key_combos[] = {
     [COMBO_HYPR_R]    = COMBO(combo_hypr_r, LCTL(LSFT(LALT(KC_LGUI)))),
     [COMBO_ENTER]     = COMBO(combo_enter, KC_ENT),
     [COMBO_ESC]       = COMBO(combo_esc, KC_ESC),
+    [COMBO_BOOT]      = COMBO(combo_boot, QK_BOOT),
 };
 
 // A combo-mod must only apply to a key typed with the OPPOSITE hand from the
@@ -110,7 +115,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 		KC_NO, MO(1), KC_NO,                                                  KC_NO, LT(2, KC_SPC), KC_BSPC
 	),
 	[1] = LAYOUT(
-		QK_BOOT, LSFT(KC_1), LSFT(KC_2), LSFT(KC_3), LSFT(KC_4), LSFT(KC_5),   LSFT(KC_6), LSFT(KC_7), LSFT(KC_8), LSFT(KC_9), LSFT(KC_0), KC_TRNS,
+		KC_NO, LSFT(KC_1), LSFT(KC_2), LSFT(KC_3), LSFT(KC_4), LSFT(KC_5),   LSFT(KC_6), LSFT(KC_7), LSFT(KC_8), LSFT(KC_9), LSFT(KC_0), KC_TRNS,
 		KC_NO, KC_1, KC_2, KC_3, LSFT_T(KC_4), KC_5,                        KC_MINS, RSFT_T(KC_EQL), KC_GRV, KC_LBRC, KC_RBRC, KC_BSLS,
 		KC_TRNS, KC_6, KC_7, KC_8, KC_9, KC_0,                                LSFT(KC_MINS), LSFT(KC_EQL), LSFT(KC_GRV), LSFT(KC_LBRC), LSFT(KC_RBRC), KC_TRNS,
 		KC_NO, KC_TRNS, KC_NO,                                                KC_NO, KC_TRNS, LALT(KC_BSPC)
@@ -122,7 +127,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 		KC_NO, KC_TRNS, KC_NO,                                                KC_NO, KC_TRNS, KC_TRNS
 	),
 	[3] = LAYOUT(
-		QK_BOOT, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,                           KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
+		KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,                           KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
 		RM_TOGG, RM_HUEU, RM_SATU, RM_VALU, KC_NO, KC_NO,                     LALT(KC_LEFT), LALT(KC_DOWN), LALT(KC_UP), LALT(KC_RGHT), KC_NO, KC_NO,
 		KC_NO, RM_HUED, RM_SATD, RM_VALD, KC_NO, KC_NO,                       KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
 		KC_TRNS, KC_TRNS, KC_TRNS,                                            KC_TRNS, KC_TRNS, KC_TRNS
