@@ -24,18 +24,18 @@ When discussing this keymap, keys are referred to by these names instead of raw 
 **Pinky keys** — the outer column of each half (left column 0, right column 5), 3 per side named by row. Each also has a 3-letter acronym (Pinky/Left-Right/Up-Middle-Down):
 | | Gauche (left) | Droite (right) |
 |---|---|---|
-| **Haut** (top) | `PLU` = `LT(4, KC_TAB)` — Tab tap / layer 4 hold; on layer 1, `PLU` is overridden to `QK_BOOT` (bootloader entry) | `PRU` — **physically removed**, `KC_NO` on every layer (Enter and Escape are combos, the layer 4 lock moved to `TLM`) |
-| **Milieu** (home row) | `PLM` — `KC_NO` on layers 0/1/2/4 (Hyper moved to the `TLM`+`G` / `TRM`+`H` combos); only `RM_TOGG` on layer 3 | `PRM` = `KC_QUOT` — the `'` key |
+| **Haut** (top) | `PLU` = `LT(4, KC_TAB)` — Tab tap / layer 4 hold; `KC_NO` on layers 1 and 3 | `PRU` — **physically removed**, `KC_NO` on every layer (Enter (`J`+`K`) and Escape are combos, the layer 4 lock moved to `TLM`) |
+| **Milieu** (home row) | `PLM` — `KC_NO` on layers 0/1/2/4 (Hyper moved to the `TLM`+`G` / `TRM`+`H` combos); only `RM_TOGG` on layer 3 | `PRM` — **physically removed** (the keymap still carries `KC_QUOT`/`\`/`|` at that position on layers 0/1/2, harmless since no switch exists; `'` is the `,`+`.` combo, `\` and `|` live on layer 2 `S`/`D`) |
 | **Bas** (bottom) | `PLD` = `KC_LSFT` | `PRD` = `KC_RSFT` |
 
 **Thumb keys** — the 3-key mod cluster per side, named by distance from the keyboard's center gap. Each also has a 3-letter acronym (Thumb/Left-Right/Inner-Middle-Outer):
 | | Gauche (left) | Droit (right) |
 |---|---|---|
 | **Extérieur** (outermost, away from center) | `TLO` — **physically removed**, `KC_NO` on every layer | `TRO` = `KC_BSPC` — Backspace, no hold function; on layer 1, `TRO` is `LALT(KC_BSPC)` (word delete) |
-| **Milieu** | `TLM` = `MO(1)` — layer 1 hold, no tap function; `TLM`+`B` combo = Enter, `TLM`+`G` combo = Hyper; on layer 4, `TLM` is `QK_LLCK` (layer lock) | `TRM` = `LT(2, KC_SPC)` — Space tap / layer 2 hold; `TRM`+`P` combo = Escape, `TRM`+`H` combo = Hyper |
+| **Milieu** | `TLM` = `MO(1)` — layer 1 hold, no tap function; `TLM`+`B` combo = Enter (fallback), `TLM`+`G` combo = Hyper; on layer 4, `TLM` is `QK_LLCK` (layer lock) | `TRM` = `LT(2, KC_SPC)` — Space tap / layer 2 hold; `TRM`+`P` combo = Escape, `TRM`+`H` combo = Hyper |
 | **Intérieur** (innermost, next to center) | `TLI` — **physically removed**, `KC_NO` on every layer | `TRI` — **physically removed**, `KC_NO` on every layer |
 
-These names describe layer 0 (the base layer); the same position names apply on other layers even when the keycode there differs (e.g. "pinky droite haut" is `QK_BOOT` on layer 3, `KC_ESC` on layer 0).
+These names describe layer 0 (the base layer); the same position names apply on other layers even when the keycode there differs (e.g. `PLU` is `KC_NO` on layer 1, `LT(4, KC_TAB)` on layer 0).
 
 ## Build / compile
 
@@ -87,10 +87,10 @@ make test:tap_dance
 ## Keymap architecture (`keyboards/crkbd/rev4_1/standard/keymaps/raphaelsmadja/`)
 
 - `keymap.c` defines a 5-layer `keymaps[]` array using the `LAYOUT()` macro (36 main keys + 6 thumb keys, split 18/18 + 3/3):
-  - Layer 0: base QWERTY layer. Mods (Alt/Ctrl/Cmd/Shift on the home row, Hyper on `G`/`H`) are all combos with `TLM`/`TRM`; `PLM` is empty. `TRM` is `LT(2, KC_SPC)` (Space tap / layer 2 hold), Enter is the `TLM`+`B` combo and Escape the `TRM`+`P` combo (`TLO`/`TLI`/`TRI`/`PRU` are physically removed).
-  - Layer 1: symbols/numbers (accessed by holding `TLM`, `MO(1)`, on layer 0; `TLM` has no tap function). `TRM` on this layer is `KC_TRNS` (falls through to `LT(2, KC_SPC)`); `TRO` on this layer is `LALT(KC_BSPC)` (word delete). `PLU` on this layer is `QK_BOOT` (bootloader entry) instead of a symbol.
+  - Layer 0: base QWERTY layer. Mods (Alt/Ctrl/Cmd/Shift on the home row, Hyper on `G`/`H`) are all combos with `TLM`/`TRM`; `PLM` is empty. `TRM` is `LT(2, KC_SPC)` (Space tap / layer 2 hold), Enter is the `J`+`K` combo (`TLM`+`B` kept as a fallback) and Escape the `TRM`+`P` combo (`TLO`/`TLI`/`TRI`/`PRU` are physically removed).
+  - Layer 1: symbols/numbers (accessed by holding `TLM`, `MO(1)`, on layer 0; `TLM` has no tap function). `TRM` on this layer is `KC_TRNS` (falls through to `LT(2, KC_SPC)`); `TRO` on this layer is `LALT(KC_BSPC)` (word delete). `PLU` on this layer is `KC_NO`. Bootloader entry is the `TLM`+`Q`+`W`+`E` combo (left half only, so it works even if the right half is unresponsive).
   - Layer 2: navigation/media/screenshot keys (accessed by holding `TRM`, `LT(2, KC_SPC)`, on layer 0; tapping it types Space).
-  - Layer 3: reached automatically when layers 1+2 are both active (tri-layer) — bootloader entry (`QK_BOOT`), RGB matrix controls, and window-management arrow keys.
+  - Layer 3: reached automatically when layers 1+2 are both active (tri-layer) — RGB matrix controls, and window-management arrow keys.
   - Layer 4: mouse keys layer, held via `PLU` (`LT(4, KC_TAB)`); tapping `TLM` (`QK_LLCK`) while on it locks/unlocks the layer; `TRM` is left click (`MS_BTN1`) and `TRO` is right click (`MS_BTN2`) while on this layer.
 - `layer_state_set_user()` wires up the tri-layer behavior (`update_tri_layer_state(state, 1, 2, 3)`), making layer 3 accessible by holding both layer-1 and layer-2 triggers together. It also drives the per-layer RGB color (`rgb_matrix_update_layer_color()`): layer 0 = a custom persistent typing heatmap (`rgb_matrix_heatmap.c`: its heat buffer is fed from `housekeeping_task_user()` on both halves regardless of the displayed mode, so it survives layer/mod-shape color switches instead of being reset like QMK's built-in `TYPING_HEATMAP`), layers 1-4 = solid blue/orange/purple/green via `rgb_matrix_mode_noeeprom()`/`rgb_matrix_sethsv_noeeprom()`. This applies to **both halves** — it piggybacks on QMK's built-in `RGB_MATRIX_SPLIT` sync RPC (auto-enabled by `rgb_matrix.split_count` in `keyboard.json`), which was already syncing `rgb_matrix_config` to the slave, rather than syncing `layer_state` itself. Syncing `layer_state` directly (a new split transaction) was tried repeatedly in the past and broke matrix scanning on the right half every time — don't reintroduce that approach; see the history in `config.h`.
 - `rules.mk` enables `MOUSEKEY_ENABLE`, `RGB_MATRIX_ENABLE`, `COMBO_ENABLE` and `LAYER_LOCK_ENABLE` for this keymap specifically (no tap-dance anymore).

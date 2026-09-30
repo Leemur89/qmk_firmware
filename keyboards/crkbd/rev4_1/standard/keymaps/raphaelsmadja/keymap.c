@@ -36,6 +36,9 @@ enum combos {
     COMBO_HYPR_R,
     COMBO_ENTER,
     COMBO_ESC,
+    COMBO_BOOT,
+    COMBO_QUOTE,
+    COMBO_ENTER_JK,
 };
 
 const uint16_t PROGMEM combo_alt_l[]     = {MO(1), KC_A, COMBO_END};
@@ -56,6 +59,16 @@ const uint16_t PROGMEM combo_hypr_r[]    = {LT(2, KC_SPC), KC_H, COMBO_END};
 // Declared after the mod combos so process_combo_event() ignores them.
 const uint16_t PROGMEM combo_enter[]     = {MO(1), KC_B, COMBO_END};
 const uint16_t PROGMEM combo_esc[]       = {LT(2, KC_SPC), KC_P, COMBO_END};
+// Bootloader: TLM (layer 1 held) + Q+W+E, left half only, so it stays
+// reachable even when the right half is unresponsive.
+const uint16_t PROGMEM combo_boot[]      = {MO(1), KC_Q, KC_W, KC_E, COMBO_END};
+// Apostrophe on `,` + `.` (two adjacent fingers, same row) since PRM is being
+// physically removed.
+const uint16_t PROGMEM combo_quote[]     = {KC_COMM, KC_DOT, COMBO_END};
+// Enter also on J+K (two adjacent right-hand fingers on the home row), trial
+// replacement for the TLM+B stretch; TLM+B is kept as a fallback. Declared
+// after the TRM+J+K mod combos so those win when TRM is held.
+const uint16_t PROGMEM combo_enter_jk[]  = {KC_J, KC_K, COMBO_END};
 
 combo_t key_combos[] = {
     [COMBO_ALT_L]     = COMBO(combo_alt_l, KC_LALT),
@@ -74,6 +87,9 @@ combo_t key_combos[] = {
     [COMBO_HYPR_R]    = COMBO(combo_hypr_r, LCTL(LSFT(LALT(KC_LGUI)))),
     [COMBO_ENTER]     = COMBO(combo_enter, KC_ENT),
     [COMBO_ESC]       = COMBO(combo_esc, KC_ESC),
+    [COMBO_BOOT]      = COMBO(combo_boot, QK_BOOT),
+    [COMBO_QUOTE]     = COMBO(combo_quote, KC_QUOT),
+    [COMBO_ENTER_JK]  = COMBO(combo_enter_jk, KC_ENT),
 };
 
 // A combo-mod must only apply to a key typed with the OPPOSITE hand from the
@@ -110,19 +126,19 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 		KC_NO, MO(1), KC_NO,                                                  KC_NO, LT(2, KC_SPC), KC_BSPC
 	),
 	[1] = LAYOUT(
-		QK_BOOT, LSFT(KC_1), LSFT(KC_2), LSFT(KC_3), LSFT(KC_4), LSFT(KC_5),   LSFT(KC_6), LSFT(KC_7), LSFT(KC_8), LSFT(KC_9), LSFT(KC_0), KC_TRNS,
+		KC_NO, LSFT(KC_1), LSFT(KC_2), LSFT(KC_3), LSFT(KC_4), LSFT(KC_5),   LSFT(KC_6), LSFT(KC_7), LSFT(KC_8), LSFT(KC_9), LSFT(KC_0), KC_TRNS,
 		KC_NO, KC_1, KC_2, KC_3, LSFT_T(KC_4), KC_5,                        KC_MINS, RSFT_T(KC_EQL), KC_GRV, KC_LBRC, KC_RBRC, KC_BSLS,
 		KC_TRNS, KC_6, KC_7, KC_8, KC_9, KC_0,                                LSFT(KC_MINS), LSFT(KC_EQL), LSFT(KC_GRV), LSFT(KC_LBRC), LSFT(KC_RBRC), KC_TRNS,
 		KC_NO, KC_TRNS, KC_NO,                                                KC_NO, KC_TRNS, LALT(KC_BSPC)
 	),
 	[2] = LAYOUT(
 		KC_TRNS, KC_NO, KC_NO, KC_NO, KC_F2, KC_NO,                           LCTL(LSFT(LALT(LGUI(KC_Y)))), KC_MPRV, KC_MNXT, KC_MPLY, LGUI(LSFT(KC_T)), KC_NO,
-		KC_NO, KC_NO, KC_NO, KC_NO, KC_LSFT, KC_NO,                         KC_LEFT, KC_DOWN, KC_UP, KC_RGHT, LGUI(KC_GRV), LSFT(KC_BSLS),
+		KC_NO, KC_NO, KC_BSLS, LSFT(KC_BSLS), KC_LSFT, KC_NO,                         KC_LEFT, KC_DOWN, KC_UP, KC_RGHT, LGUI(KC_GRV), LSFT(KC_BSLS),
 		KC_TRNS, KC_NO, LGUI(LSFT(KC_4)), KC_NO, KC_NO, KC_NO,                LGUI(KC_PPLS), LGUI(LSFT(KC_LBRC)), LGUI(LSFT(KC_RBRC)), LGUI(KC_PMNS), LGUI(KC_P0), KC_TRNS,
 		KC_NO, KC_TRNS, KC_NO,                                                KC_NO, KC_TRNS, KC_TRNS
 	),
 	[3] = LAYOUT(
-		QK_BOOT, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,                           KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
+		KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,                           KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
 		RM_TOGG, RM_HUEU, RM_SATU, RM_VALU, KC_NO, KC_NO,                     LALT(KC_LEFT), LALT(KC_DOWN), LALT(KC_UP), LALT(KC_RGHT), KC_NO, KC_NO,
 		KC_NO, RM_HUED, RM_SATD, RM_VALD, KC_NO, KC_NO,                       KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
 		KC_TRNS, KC_TRNS, KC_TRNS,                                            KC_TRNS, KC_TRNS, KC_TRNS
