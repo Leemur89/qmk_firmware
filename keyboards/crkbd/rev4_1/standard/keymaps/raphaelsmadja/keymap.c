@@ -39,6 +39,7 @@ enum combos {
     COMBO_BOOT,
     COMBO_QUOTE,
     COMBO_ENTER_JK,
+    COMBO_QUESTION,
 };
 
 const uint16_t PROGMEM combo_alt_l[]     = {MO(1), KC_A, COMBO_END};
@@ -69,6 +70,9 @@ const uint16_t PROGMEM combo_quote[]     = {KC_COMM, KC_DOT, COMBO_END};
 // replacement for the TLM+B stretch; TLM+B is kept as a fallback. Declared
 // after the TRM+J+K mod combos so those win when TRM is held.
 const uint16_t PROGMEM combo_enter_jk[]  = {KC_J, KC_K, COMBO_END};
+// `?` on . + ` (the two last keys of the bottom row), since / (and so Shift + /)
+// moved to the layer 1 calculator and ` took its place on layer 0.
+const uint16_t PROGMEM combo_question[]  = {KC_DOT, KC_GRV, COMBO_END};
 
 combo_t key_combos[] = {
     [COMBO_ALT_L]     = COMBO(combo_alt_l, KC_LALT),
@@ -90,6 +94,7 @@ combo_t key_combos[] = {
     [COMBO_BOOT]      = COMBO(combo_boot, QK_BOOT),
     [COMBO_QUOTE]     = COMBO(combo_quote, KC_QUOT),
     [COMBO_ENTER_JK]  = COMBO(combo_enter_jk, KC_ENT),
+    [COMBO_QUESTION]  = COMBO(combo_question, KC_QUES),
 };
 
 // A combo-mod must only apply to a key typed with the OPPOSITE hand from the
@@ -122,13 +127,26 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 	[0] = LAYOUT(
 		LT(4, KC_TAB), KC_Q, KC_W, KC_E, KC_R, KC_T,                          KC_Y, KC_U, KC_I, KC_O, KC_P, KC_NO,
 		KC_NO, KC_A, KC_S, KC_D, KC_F, KC_G,                          KC_H, KC_J, KC_K, KC_L, KC_SCLN, KC_QUOT,
-		KC_LSFT, KC_Z, KC_X, KC_C, KC_V, KC_B,                                KC_N, KC_M, KC_COMM, KC_DOT, KC_SLSH, KC_RSFT,
+		KC_LSFT, KC_Z, KC_X, KC_C, KC_V, KC_B,                                KC_N, KC_M, KC_COMM, KC_DOT, KC_GRV, KC_RSFT,
 		KC_NO, MO(1), KC_NO,                                                  KC_NO, LT(2, KC_SPC), KC_BSPC
 	),
 	[1] = LAYOUT(
+#ifdef LAYER1_LEGACY_NUMBERS
+		// Ancienne disposition : chiffres sur 2 lignes (1-5 home row, 6-0 bas),
+		// symboles @ # $ en haut sur W/E/R. Activer avec
+		// `#define LAYER1_LEGACY_NUMBERS` (ex. dans config.h) pour revenir en arrière.
 		KC_NO, LSFT(KC_1), LSFT(KC_2), LSFT(KC_3), LSFT(KC_4), LSFT(KC_5),   LSFT(KC_6), LSFT(KC_7), LSFT(KC_8), LSFT(KC_9), LSFT(KC_0), KC_TRNS,
 		KC_NO, KC_1, KC_2, KC_3, LSFT_T(KC_4), KC_5,                        KC_MINS, RSFT_T(KC_EQL), KC_GRV, KC_LBRC, KC_RBRC, KC_BSLS,
 		KC_TRNS, KC_6, KC_7, KC_8, KC_9, KC_0,                                LSFT(KC_MINS), LSFT(KC_EQL), LSFT(KC_GRV), LSFT(KC_LBRC), LSFT(KC_RBRC), KC_TRNS,
+#else
+		// Calculatrice à droite : 789 sur U/I/O, 456 sur J/K/L, 123 sur M/,/., 0 sur N ;
+		// + sur Y, = sur P, - sur H, * sur ;, / sur /.
+		// Gauche : ! ^ # ( ) / @ $ & [ ] / _ ~ % { } (Q..T / A..G / Z..B)
+		// (` est sur le layer 0 à la place de /, \ est sur le layer 2).
+		KC_NO, LSFT(KC_1), LSFT(KC_6), LSFT(KC_3), LSFT(KC_9), LSFT(KC_0),   LSFT(KC_EQL), KC_7, KC_8, KC_9, KC_EQL, KC_TRNS,
+		KC_NO, LSFT(KC_2), LSFT(KC_4), LSFT(KC_7), KC_LBRC, KC_RBRC,                        KC_MINS, KC_4, KC_5, KC_6, LSFT(KC_8), KC_BSLS,
+		KC_TRNS, LSFT(KC_MINS), LSFT(KC_GRV), LSFT(KC_5), LSFT(KC_LBRC), LSFT(KC_RBRC),                                KC_0, KC_1, KC_2, KC_3, KC_SLSH, KC_TRNS,
+#endif
 		KC_NO, KC_TRNS, KC_NO,                                                KC_NO, KC_TRNS, LALT(KC_BSPC)
 	),
 	[2] = LAYOUT(
@@ -145,7 +163,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 	),
 	[4] = LAYOUT(
 		KC_TRNS, KC_TRNS, LGUI(KC_W), KC_TRNS, LGUI(KC_R), LGUI(KC_T),        LGUI(KC_LBRC), MS_WHLU, MS_WHLD, LGUI(KC_RBRC), KC_TRNS, KC_NO,
-		KC_NO, LGUI(KC_A), KC_TRNS, LGUI(KC_D), LGUI(KC_F), KC_TRNS,       MS_LEFT, MS_DOWN, MS_UP, MS_RGHT, KC_TRNS, KC_TRNS,
+		KC_NO, KC_LALT, KC_LCTL, KC_LGUI, KC_LSFT, KC_TRNS,       MS_LEFT, MS_DOWN, MS_UP, MS_RGHT, KC_TRNS, KC_TRNS,
 		KC_TRNS, KC_TRNS, LGUI(KC_X), LGUI(KC_C), LGUI(KC_V), KC_TRNS,       LGUI(KC_PPLS), LGUI(LSFT(KC_LBRC)), LGUI(LSFT(KC_RBRC)), LGUI(KC_PMNS), LGUI(KC_P0), KC_TRNS,
 		KC_NO, QK_LLCK, KC_NO,                                                KC_NO, MS_BTN1, MS_BTN2
 	)
