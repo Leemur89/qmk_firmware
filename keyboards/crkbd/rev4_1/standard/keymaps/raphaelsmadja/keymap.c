@@ -144,10 +144,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 #else
 		// Calculatrice à droite : 789 sur U/I/O, 456 sur J/K/L, 123 sur M/,/., 0 sur N ;
 		// + sur Y, = sur P, - sur H, * sur ;, / sur /. Gauche : ! @ # $ % sur Q/A/G/B/T,
-		// le reste (W E R S D X C V Z) est libre pour l'instant.
-		KC_NO, LSFT(KC_1), KC_NO, KC_NO, KC_NO, LSFT(KC_5),   LSFT(KC_EQL), KC_7, KC_8, KC_9, KC_EQL, KC_TRNS,
-		KC_NO, LSFT(KC_2), KC_NO, KC_NO, KC_LSFT, LSFT(KC_3),                        KC_MINS, RSFT_T(KC_4), KC_5, KC_6, LSFT(KC_8), KC_BSLS,
-		KC_TRNS, KC_NO, KC_NO, KC_NO, KC_NO, LSFT(KC_4),                                KC_0, KC_1, KC_2, KC_3, KC_SLSH, KC_TRNS,
+		// ^ sur W, & sur S, _ sur Z, () sur E/R, [] sur D/F, {} sur C/V, ` sur X
+		// (~ = Shift + `, \ est sur le layer 2).
+		KC_NO, LSFT(KC_1), LSFT(KC_6), LSFT(KC_9), LSFT(KC_0), LSFT(KC_5),   LSFT(KC_EQL), KC_7, KC_8, KC_9, KC_EQL, KC_TRNS,
+		KC_NO, LSFT(KC_2), LSFT(KC_7), KC_LBRC, KC_RBRC, LSFT(KC_3),                        KC_MINS, RSFT_T(KC_4), KC_5, KC_6, LSFT(KC_8), KC_BSLS,
+		KC_TRNS, LSFT(KC_MINS), KC_GRV, LSFT(KC_LBRC), LSFT(KC_RBRC), LSFT(KC_4),                                KC_0, KC_1, KC_2, KC_3, KC_SLSH, KC_TRNS,
 #endif
 		KC_NO, KC_TRNS, KC_NO,                                                KC_NO, KC_TRNS, LALT(KC_BSPC)
 	),
