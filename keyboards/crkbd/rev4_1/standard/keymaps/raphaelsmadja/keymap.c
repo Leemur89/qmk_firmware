@@ -323,3 +323,28 @@ void persistent_heatmap_task(void);
 void housekeeping_task_user(void) {
     persistent_heatmap_task();
 }
+
+// Entrée en bootloader : bandes verticales de couleurs franches (style rétro,
+// sans fondu), évitant les rouges/oranges déjà omniprésents avec la heatmap.
+// Appelé juste avant le saut vers le bootloader, uniquement sur la moitié qui
+// traite QK_BOOT (le master) ; le flush direct garde les couleurs affichées.
+bool shutdown_user(bool jump_to_bootloader) {
+    if (jump_to_bootloader) {
+        static const uint8_t palette[][3] = {
+            {0x00, 0xFF, 0x00}, // vert
+            {0x00, 0x00, 0xFF}, // bleu
+            {0xFF, 0xFF, 0x00}, // jaune
+            {0xFF, 0x00, 0xFF}, // magenta
+            {0x00, 0xFF, 0xFF}, // cyan
+            {0xFF, 0xFF, 0xFF}, // blanc
+        };
+        const uint8_t bands = sizeof(palette) / sizeof(palette[0]);
+        for (uint8_t i = 0; i < RGB_MATRIX_LED_COUNT; i++) {
+            uint8_t b = (uint16_t)g_led_config.point[i].x * bands / 225;
+            if (b >= bands) b = bands - 1;
+            rgb_matrix_set_color(i, palette[b][0], palette[b][1], palette[b][2]);
+        }
+        rgb_matrix_update_pwm_buffers();
+    }
+    return true;
+}
