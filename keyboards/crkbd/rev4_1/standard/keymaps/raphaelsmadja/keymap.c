@@ -39,6 +39,7 @@ enum combos {
     COMBO_BOOT,
     COMBO_QUOTE,
     COMBO_ENTER_JK,
+    COMBO_QUESTION,
 };
 
 const uint16_t PROGMEM combo_alt_l[]     = {MO(1), KC_A, COMBO_END};
@@ -69,6 +70,9 @@ const uint16_t PROGMEM combo_quote[]     = {KC_COMM, KC_DOT, COMBO_END};
 // replacement for the TLM+B stretch; TLM+B is kept as a fallback. Declared
 // after the TRM+J+K mod combos so those win when TRM is held.
 const uint16_t PROGMEM combo_enter_jk[]  = {KC_J, KC_K, COMBO_END};
+// `?` on . + ` (the two last keys of the bottom row), since / (and so Shift + /)
+// moved to the layer 1 calculator and ` took its place on layer 0.
+const uint16_t PROGMEM combo_question[]  = {KC_DOT, KC_GRV, COMBO_END};
 
 combo_t key_combos[] = {
     [COMBO_ALT_L]     = COMBO(combo_alt_l, KC_LALT),
@@ -90,6 +94,7 @@ combo_t key_combos[] = {
     [COMBO_BOOT]      = COMBO(combo_boot, QK_BOOT),
     [COMBO_QUOTE]     = COMBO(combo_quote, KC_QUOT),
     [COMBO_ENTER_JK]  = COMBO(combo_enter_jk, KC_ENT),
+    [COMBO_QUESTION]  = COMBO(combo_question, KC_QUES),
 };
 
 // A combo-mod must only apply to a key typed with the OPPOSITE hand from the

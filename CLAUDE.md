@@ -19,7 +19,7 @@ When discussing this keymap, keys are referred to by these names instead of raw 
 **Querty keys** — the standard QWERTY letters and punctuation (`;` `,` `.` `/`), i.e. left columns 1-5 and right columns 0-4 of each row:
 - Row 0: `Q W E R T` / `Y U I O P`
 - Row 1 (home row; the mods on it are combos with `TLM`/`TRM`): `A S D F G` / `H J K L ;`
-- Row 2: `Z X C V B` / `` N M , . ` `` (on layer 0 the last key is a backtick; `/` lives on the layer 1 calculator)
+- Row 2: `Z X C V B` / `` N M , . ` `` (on layer 0 the last key is a backtick; `/` lives on the layer 1 calculator, and `?` is the `.`+`` ` `` combo)
 
 **Pinky keys** — the outer column of each half (left column 0, right column 5), 3 per side named by row, each with a 3-letter acronym (Pinky/Left-Right/Up-Middle-Down). **Only `PLU` physically exists**; the other five (`PLM`, `PLD`, `PRU`, `PRM`, `PRD`) were removed from the board. The keymap may still carry keycodes at those positions (e.g. `KC_LSFT`/`KC_RSFT` at `PLD`/`PRD`, `KC_QUOT`/`\` at `PRM`) — harmless dead entries, since no switch exists.
 | | Gauche (left) | Droite (right) |
